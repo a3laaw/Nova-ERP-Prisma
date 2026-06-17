@@ -1,0 +1,337 @@
+'use client';
+
+import { useState, useMemo, useEffect } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import { useFirebase, useDocument, useSubscription } from '@/firebase/index';
+import { doc, updateDoc, serverTimestamp, writeBatch, collection, getDoc, getDocs, query, orderBy, where, Timestamp } from 'firebase/firestore';
+import type { FieldVisit, ConstructionProject, TransactionStage, Holiday } from '@/lib/types';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Skeleton } from '@/components/ui/skeleton';
+import { 
+    MapPin, 
+    Loader2, 
+    CheckCircle2, 
+    Save, 
+    ArrowRight, 
+    ShieldCheck, 
+    ClipboardCheck, 
+    Building2, 
+    TrendingUp,
+    Clock,
+    Activity,
+    IterationCcw
+} from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { format } from 'date-fns';
+import { ar } from 'date-fns/locale';
+import { toFirestoreDate } from '@/services/date-converter';
+import { Badge } from '@/components/ui/badge';
+import { useAuth } from '@/context/auth-context';
+import { cn, cleanFirestoreData, getTenantPath, formatCurrency } from '@/lib/utils';
+import { Separator } from '@/components/ui/separator';
+import { Slider } from '@/components/ui/slider';
+import { InlineSearchList } from '@/components/ui/inline-search-list';
+import { addWorkingDays } from '@/services/leave-calculator';
+import { useBranding } from '@/context/branding-context';
+
+export default function FieldVisitDetailPage() {
+    const params = useParams();
+    const router = useRouter();
+    const { firestore } = useFirebase();
+    const { user: currentUser } = useAuth();
+    const { branding } = useBranding();
+    const { toast } = useToast();
+    const id = Array.isArray(params.id) ? params.id[0] : params.id;
+    const tenantId = currentUser?.currentCompanyId;
+
+    const [isSaving, setIsSaving] = useState(false);
+    const [isCapturingLocation, setIsCapturingLocation] = useState(false);
+    
+    const [notes, setNotes] = useState('');
+    const [progressAchieved, setProgressAchieved] = useState([0]); 
+    const [location, setLocation] = useState<{ latitude: number, longitude: number, accuracy: number } | null>(null);
+
+    const [boqItems, setBoqItems] = useState<{id: string, name: string}[]>([]);
+    const [selectedStageId, setSelectedStageId] = useState('');
+    const [isLoadingStages, setIsLoadingStages] = useState(false);
+
+    const { data: publicHolidays = [] } = useSubscription<Holiday>(firestore, 'holidays');
+
+    const visitPath = useMemo(() => id && tenantId ? getTenantPath(`field_visits/${id}`, tenantId) : null, [id, tenantId]);
+    const { data: visit, loading } = useDocument<FieldVisit>(firestore, visitPath);
+
+    useEffect(() => {
+        const fetchStages = async () => {
+            if (!visit || !firestore || !tenantId) return;
+            setIsLoadingStages(true);
+            try {
+                const projectPath = getTenantPath(`projects/${visit.projectId}`, tenantId);
+                const projectSnap = await getDoc(doc(firestore, projectPath!));
+                if (projectSnap.exists()) {
+                    const projectData = projectSnap.data() as ConstructionProject;
+                    if (projectData.boqId) {
+                        const boqItemsPath = getTenantPath(`boqs/${projectData.boqId}/items`, tenantId);
+                        const q = query(collection(firestore, boqItemsPath!), orderBy('itemNumber'));
+                        const snap = await getDocs(q);
+                        const stages = snap.docs.map(d => {
+                            const data = d.data();
+                            const itemNum = data.itemNumber || '';
+                            const desc = data.description || '';
+                            return { 
+                                id: d.id, 
+                                name: itemNum ? `${itemNum} - ${desc}` : desc,
+                                isHeader: data.isHeader || false
+                            }
+                        }).filter(i => !i.isHeader && i.name);
+                        setBoqItems(stages);
+                        
+                        if (visit.plannedStageId) {
+                            setSelectedStageId(visit.plannedStageId);
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error("Error fetching BOQ stages:", e);
+            } finally {
+                setIsLoadingStages(false);
+            }
+        };
+
+        fetchStages();
+    }, [visit, firestore, tenantId]);
+
+    useEffect(() => {
+        if (visit?.confirmationData) {
+            setNotes(visit.confirmationData.notes || '');
+            setLocation(visit.confirmationData.location || null);
+            setProgressAchieved([visit.confirmationData.progressAchieved || 0]);
+        }
+    }, [visit]);
+
+    const handleGetLocation = () => {
+        if (!navigator.geolocation) return;
+        setIsCapturingLocation(true);
+        navigator.geolocation.getCurrentPosition(
+            (pos) => {
+                setLocation({ latitude: pos.coords.latitude, longitude: pos.coords.longitude, accuracy: pos.coords.accuracy });
+                setIsCapturingLocation(false);
+            },
+            () => setIsCapturingLocation(false),
+            { enableHighAccuracy: true }
+        );
+    };
+
+    const handleConfirmDone = async () => {
+        if (!firestore || !visit || !currentUser || !tenantId || !notes.trim()) return;
+
+        setIsSaving(true);
+        try {
+            const batch = writeBatch(firestore);
+            const actualStage = boqItems.find(s => s.id === selectedStageId);
+            
+            const visitDocPath = getTenantPath(`field_visits/${id}`, tenantId);
+            batch.update(doc(firestore, visitDocPath!), {
+                status: 'confirmed',
+                plannedStageId: selectedStageId,
+                plannedStageName: actualStage?.name || visit.plannedStageName || 'متابعة ميدانية',
+                confirmationData: {
+                    confirmedAt: serverTimestamp(),
+                    notes,
+                    location,
+                    isCompleted: true,
+                    progressAchieved: progressAchieved[0]
+                }
+            });
+
+            if (visit.transactionId) {
+                const txPath = getTenantPath(`clients/${visit.clientId}/transactions/${visit.transactionId}`, tenantId);
+                const txRef = doc(firestore, txPath!);
+                const txSnap = await getDoc(txRef);
+                
+                if (txSnap.exists()) {
+                    const txData = txSnap.data();
+                    const currentStages: TransactionStage[] = JSON.parse(JSON.stringify(txData.stages || []));
+                    
+                    const stageIdx = currentStages.findIndex(s => s.name.includes(actualStage?.name || '') || s.stageId === selectedStageId);
+                    
+                    if (stageIdx > -1) {
+                        const stage = currentStages[stageIdx];
+                        const now = new Date();
+
+                        if (stage.trackingType === 'occurrence' || stage.trackingType === 'hybrid') {
+                            const newCount = (stage.currentCount || 0) + 1;
+                            stage.currentCount = newCount;
+                            
+                            if (stage.trackingType === 'occurrence' && stage.maxOccurrences && newCount >= stage.maxOccurrences) {
+                                stage.status = 'completed';
+                                stage.endDate = Timestamp.fromDate(now);
+                            } else {
+                                stage.status = 'in-progress';
+                            }
+                        } else {
+                            stage.status = 'completed';
+                            stage.endDate = Timestamp.fromDate(now);
+                        }
+
+                        if (stage.status === 'completed') {
+                            const nextIds = stage.nextStageIds || [];
+                            if (nextIds.length > 0) {
+                                nextIds.forEach(nid => {
+                                    const target = currentStages.find(s => s.stageId === nid);
+                                    if (target && target.status === 'pending') {
+                                        target.status = 'in-progress';
+                                        target.startDate = Timestamp.fromDate(now);
+                                        if (target.expectedDurationDays) {
+                                            target.expectedEndDate = Timestamp.fromDate(addWorkingDays(now, target.expectedDurationDays, branding?.work_hours?.holidays || [], publicHolidays));
+                                        }
+                                    }
+                                });
+                            } else {
+                                const nextStage = currentStages.find(s => s.order === stage.order + 1);
+                                if (nextStage && nextStage.status === 'pending') {
+                                    nextStage.status = 'in-progress';
+                                    nextStage.startDate = Timestamp.fromDate(now);
+                                    if (nextStage.expectedDurationDays) {
+                                        nextStage.expectedEndDate = Timestamp.fromDate(addWorkingDays(now, nextStage.expectedDurationDays, branding?.work_hours?.holidays || [], publicHolidays));
+                                    }
+                                }
+                            }
+                        }
+
+                        batch.update(txRef, { stages: currentStages, updatedAt: serverTimestamp() });
+                        
+                        // ✨ التوثيق الميداني الآلي في التعليقات (Automated Visit Comment) ✨
+                        const timelineRef = doc(collection(txRef, 'timelineEvents'));
+                        batch.set(timelineRef, {
+                            type: 'comment',
+                            content: `**[محضر زيارة ميدانية]**\nتم توثيق إنجاز في المرحلة: **${stage.name}**.\n**نسبة الإنجاز الميداني:** ${progressAchieved[0]}%\n\n**تقرير المهندس من الموقع:**\n${notes}`,
+                            userId: currentUser.id,
+                            userName: currentUser.fullName,
+                            userAvatar: currentUser.avatarUrl,
+                            createdAt: serverTimestamp(),
+                            companyId: tenantId
+                        });
+                    }
+                }
+            }
+
+            await batch.commit();
+            toast({ title: 'تم التوثيق والمزامنة', description: 'تم تحديث الإنجاز الميداني وسير العمل آلياً.' });
+            router.push('/dashboard/construction/field-visits');
+        } catch (error) {
+            console.error(error);
+            toast({ variant: 'destructive', title: 'خطأ في التوثيق' });
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    if (loading) return <div className="p-8 max-w-2xl mx-auto space-y-6"><Skeleton className="h-48 w-full rounded-3xl" /><Skeleton className="h-64 w-full rounded-3xl" /></div>;
+    if (!visit) return <div className="text-center p-20 font-black opacity-30">الزيارة غير موجودة.</div>;
+
+    const scheduledDate = toFirestoreDate(visit.scheduledDate);
+    const isProcessed = visit.status !== 'planned';
+
+    return (
+        <div className="max-w-2xl mx-auto space-y-6 pb-20" dir="rtl">
+            <div className="flex items-center justify-between px-2">
+                <button onClick={() => router.back()} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors font-bold">
+                    <ArrowRight className="h-4 w-4" /> العودة للخطة
+                </button>
+            </div>
+
+            <Card className="rounded-[2.5rem] shadow-xl border-none overflow-hidden bg-card">
+                <CardHeader className="bg-muted/30 pb-8 px-8 border-b">
+                    <div className="flex justify-between items-start">
+                        <div className="space-y-1">
+                            <CardTitle className="text-2xl font-black">{visit.clientName || ''}</CardTitle>
+                            <CardDescription className="font-bold text-primary flex items-center gap-2">
+                                <Building2 className="h-4 w-4" /> مشروع: {visit.projectName || ''}
+                            </CardDescription>
+                        </div>
+                    </div>
+                </CardHeader>
+                <CardContent className="p-8 space-y-8">
+                    <div className="grid grid-cols-2 gap-6">
+                        <div className="space-y-1">
+                            <Label className="text-[10px] uppercase font-bold text-muted-foreground">تاريخ الموعد</Label>
+                            <p className="font-bold">{scheduledDate ? format(scheduledDate, 'eeee, dd MMMM', { locale: ar }) : '-'}</p>
+                        </div>
+                        <div className="space-y-1">
+                            <Label className="text-[10px] uppercase font-bold text-muted-foreground">المرحلة المنفذة</Label>
+                            {isProcessed ? (
+                                <p className="font-black text-primary">{visit.plannedStageName || 'متابعة عامة'}</p>
+                            ) : (
+                                <InlineSearchList 
+                                    value={selectedStageId}
+                                    onSelect={setSelectedStageId}
+                                    options={boqItems.map(i => ({ value: i.id, label: i.name }))}
+                                    placeholder={isLoadingStages ? "جاري التحميل..." : "اختر المرحلة..."}
+                                    disabled={isLoadingStages}
+                                    className="mt-1"
+                                />
+                            )}
+                        </div>
+                    </div>
+
+                    <Separator />
+                    
+                    <div className="space-y-6 p-6 bg-primary/5 rounded-[2rem] border-2 border-primary/10 shadow-inner">
+                        <div className="flex justify-between items-center">
+                            <Label className="font-black text-lg text-primary flex items-center gap-2">
+                                <TrendingUp className="h-5 w-5" /> نسبة الإنجاز الميداني
+                            </Label>
+                            <span className="text-2xl font-black text-primary font-mono">{progressAchieved[0]}%</span>
+                        </div>
+                        {!isProcessed && <Slider value={progressAchieved} onValueChange={setProgressAchieved} max={100} step={5} className="py-4" />}
+                    </div>
+
+                    <div className="space-y-4">
+                        <Label className="font-black text-lg flex items-center gap-2">
+                            <MapPin className="h-5 w-5 text-primary" /> إثبات الحضور الميداني (GPS)
+                        </Label>
+                        <div className={cn("p-6 rounded-[2rem] border-2 border-dashed flex flex-col items-center justify-center gap-4", location ? "bg-green-50 border-green-200" : "bg-muted/10 border-muted-foreground/20")}>
+                            {location ? (
+                                <div className="text-center">
+                                    <ShieldCheck className="h-8 w-8 text-green-600 mx-auto mb-2" />
+                                    <p className="font-black text-green-800">تم توثيق الموقع الجغرافي بنجاح</p>
+                                </div>
+                            ) : !isProcessed && (
+                                <Button onClick={handleGetLocation} disabled={isCapturingLocation} className="rounded-xl h-12 font-bold gap-2">
+                                    {isCapturingLocation ? <Loader2 className="animate-spin h-5 w-5" /> : <MapPin className="h-5 w-5" />} تأكيد موقعي الآن
+                                </Button>
+                            )}
+                        </div>
+                    </div>
+
+                    <div className="space-y-4">
+                        <Label className="font-black text-lg flex items-center gap-2">
+                            <ClipboardCheck className="h-5 w-5 text-primary" /> التقرير الفني الميداني
+                        </Label>
+                        <div className="relative">
+                            <Textarea 
+                                value={notes} 
+                                onChange={e => setNotes(e.target.value)} 
+                                readOnly={isProcessed}
+                                placeholder="اشرح الأعمال التي تم تنفيذها اليوم ليراها العميل والمكتب..."
+                                rows={4}
+                                className="rounded-3xl border-2 p-6 shadow-inner"
+                            />
+                        </div>
+                    </div>
+                </CardContent>
+                
+                {!isProcessed && (
+                    <CardFooter className="p-8 bg-muted/10 border-t flex gap-4">
+                        <Button onClick={handleConfirmDone} disabled={isSaving || !notes.trim()} className="flex-1 h-14 rounded-2xl font-black text-xl shadow-lg gap-3">
+                            {isSaving ? <Loader2 className="animate-spin h-6 w-6" /> : <CheckCircle2 className="h-6 w-6" />} تأكيد الإنجاز وإغلاق الزيارة
+                        </Button>
+                    </CardFooter>
+                )}
+            </Card>
+        </div>
+    );
+}

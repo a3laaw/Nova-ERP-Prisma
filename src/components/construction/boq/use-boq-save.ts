@@ -15,7 +15,7 @@ import {
   query,
   updateDoc,
 } from 'firebase/firestore';
-import { useFirebase } from '@/firebase';
+import { useFirebase } from '@/firebase/index';
 import { useAuth } from '@/context/auth-context';
 import { useToast } from '@/hooks/use-toast';
 import { cleanFirestoreData } from '@/lib/utils';

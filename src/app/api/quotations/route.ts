@@ -1,24 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    const quotations = await db.quotation.findMany({
+    const items = await db.quotation.findMany({
       include: { client: { select: { nameAr: true, nameEn: true } }, items: true },
       orderBy: { createdAt: 'desc' },
     });
-    return NextResponse.json({ success: true, count: quotations.length, data: quotations });
-  } catch (error: any) {
-    return NextResponse.json({ success: false, error: 'فشل جلب عروض الأسعار' }, { status: 500 });
-  }
+    return NextResponse.json({ success: true, count: items.length, data: items });
+  } catch (error: any) { return NextResponse.json({ success: false, error: 'فشل' }, { status: 500 }); }
 }
-
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const count = await db.quotation.count();
     const quotationNumber = `QUO-${new Date().getFullYear()}-${String(count + 1).padStart(4, '0')}`;
-
     const quotation = await db.quotation.create({
       data: {
         quotationNumber,
@@ -42,8 +37,5 @@ export async function POST(request: NextRequest) {
       include: { items: true },
     });
     return NextResponse.json({ success: true, data: quotation });
-  } catch (error: any) {
-    console.error('POST /api/quotations error:', error);
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
-  }
+  } catch (error: any) { return NextResponse.json({ success: false, error: error.message }, { status: 500 }); }
 }

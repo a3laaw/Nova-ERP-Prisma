@@ -1,0 +1,428 @@
+'use client';
+
+import { useState, useMemo, useEffect, useRef, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useForm, useFieldArray, Controller, useWatch } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { useFirebase, useSubscription } from '@/firebase/index';
+import { 
+    collection, 
+    query, 
+    where, 
+    getDocs, 
+    orderBy, 
+    doc, 
+    runTransaction, 
+    serverTimestamp, 
+    getDoc, 
+    Timestamp, 
+    limit,
+    collectionGroup
+} from 'firebase/firestore'; 
+import type { Client, ClientTransaction, Account, Employee, Department, ContractTemplate, TransactionType } from '@/lib/types';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { InlineSearchList } from '@/components/ui/inline-search-list';
+import { 
+    FileSignature, 
+    User, 
+    ArrowRight, 
+    Loader2, 
+    Calculator,
+    LayoutGrid,
+    Trash2,
+    Sparkles,
+    Target,
+    ShieldCheck,
+    PlusCircle,
+    Ruler,
+    Building2,
+    Workflow,
+    Save,
+    Home,
+    AlertTriangle
+} from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/context/auth-context';
+import { formatCurrency, cleanFirestoreData, cn, getTenantPath } from '@/lib/utils';
+import { Separator } from '@/components/ui/separator';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+
+const generateId = () => Math.random().toString(36).substring(2, 9);
+const arabicOrdinals = ['الأولى', 'الثانية', 'الثالثة', 'الرابعة', 'الخامسة', 'السادسة', 'السابعة', 'الثامنة', 'التاسعة', 'العاشرة'];
+
+const contractSchema = z.object({
+  clientId: z.string().min(1, 'العميل مطلوب.'),
+  transactionId: z.string().min(1, 'المعاملة مطلوبة.'),
+  totalArea: z.preprocess((v) => v === '' || v === null ? undefined : parseFloat(String(v)), z.number().min(0).optional()),
+  floorsCount: z.preprocess((v) => v === '' || v === null ? undefined : parseInt(String(v), 10), z.number().min(1).optional()),
+  basementType: z.enum(['none', 'full', 'half', 'vault']).default('none'),
+  roofExtension: z.enum(['none', 'quarter', 'half']).default('none'),
+  workNature: z.enum(['labor_only', 'with_materials', 'consulting']).default('labor_only'),
+  clauses: z.array(z.object({
+    id: z.string(),
+    name: z.string().min(1, "وصف الدفعة مطلوب."),
+    condition: z.string().min(1, "شرط الاستحقاق مطلوب."),
+    amount: z.preprocess((a) => a === '' || a === null ? 0 : parseFloat(String(a)), z.number().min(0)),
+    percentage: z.preprocess((a) => a === '' || a === null ? 0 : parseFloat(String(a)), z.number().min(0)).optional(),
+  })).min(1, 'يجب وجود دفعة واحدة على الأقل.'),
+  financialsType: z.enum(['fixed', 'percentage']).default('fixed'),
+  totalAmount: z.preprocess((a) => a === '' || a === null ? 0 : parseFloat(String(a)), z.number().optional()),
+});
+
+type ContractValues = z.infer<typeof contractSchema>;
+
+function DirectContractContent() {
+    const { firestore } = useFirebase();
+    const { user: currentUser } = useAuth();
+    const { toast } = useToast();
+    const router = useRouter();
+    const searchParams = useSearchParams();
+
+    const tenantId = currentUser?.currentCompanyId;
+    const [isSaving, setIsSaving] = useState(false);
+    const savingRef = useRef(false);
+    const [importedTemplateId, setImportedTemplateId] = useState('');
+
+    const { register, handleSubmit, control, setValue, watch, reset, formState: { errors } } = useForm<ContractValues>({
+        resolver: zodResolver(contractSchema),
+        defaultValues: {
+            clientId: searchParams.get('clientId') || '',
+            transactionId: searchParams.get('transactionId') || '',
+            basementType: 'none', 
+            roofExtension: 'none', 
+            workNature: 'labor_only',
+            financialsType: 'fixed',
+            clauses: [{ id: generateId(), name: 'الدفعة الأولى', condition: 'عند التوقيع', amount: 0, percentage: 0 }]
+        }
+    });
+
+    const { fields, append, remove, replace: replaceClauses } = useFieldArray({ control, name: 'clauses' });
+    
+    const watchedClauses = useWatch({ control, name: 'clauses' });
+    const watchedClientId = useWatch({ control, name: 'clientId' });
+    const watchedTransactionId = useWatch({ control, name: 'transactionId' });
+    const financialsType = useWatch({ control, name: 'financialsType' });
+
+    const currentTotalCalculated = useMemo(() => {
+        const items = watchedClauses || [];
+        if (financialsType === 'fixed') {
+            return items.reduce((sum: number, c: any) => sum + (Number(c.amount) || 0), 0);
+        } else {
+            return items.reduce((sum: number, c: any) => sum + (Number(c.percentage || 0) || 0), 0);
+        }
+    }, [watchedClauses, financialsType]);
+
+    const { data: allClients = [], loading: clientsLoading } = useSubscription<Client>(firestore, tenantId ? 'clients' : null);
+    const { data: templates = [], loading: templatesLoading } = useSubscription<ContractTemplate>(firestore, tenantId ? 'contractTemplates' : null, [orderBy('title')]);
+    const { data: accounts = [] } = useSubscription<Account>(firestore, tenantId ? 'chartOfAccounts' : null);
+    const { data: transactionTypesData = [] } = useSubscription<TransactionType>(firestore, 'transactionTypes');
+
+    const [clientTransactions, setClientTransactions] = useState<ClientTransaction[]>([]);
+    const [txLoading, setTxLoading] = useState(false);
+    const [specificWorkStages, setSpecificWorkStages] = useState<{ value: string, label: string }[]>([]);
+
+    useEffect(() => {
+        if (!firestore || !watchedClientId || !tenantId) {
+            setClientTransactions([]);
+            return;
+        }
+        setTxLoading(true);
+        const txPath = getTenantPath(`clients/${watchedClientId}/transactions`, tenantId);
+        getDocs(query(collection(firestore, txPath!), where('status', 'in', ['new', 'in-progress']))).then(snap => {
+            const availableTxs = snap.docs
+                .map(d => ({ id: d.id, ...d.data() } as ClientTransaction))
+                .filter(tx => !tx.contract);
+            setClientTransactions(availableTxs);
+        }).finally(() => setTxLoading(false));
+    }, [watchedClientId, firestore, tenantId]);
+
+    useEffect(() => {
+        if (!watchedTransactionId || !firestore || !tenantId || clientTransactions.length === 0) {
+            setSpecificWorkStages([]);
+            return;
+        }
+        const selectedTx = clientTransactions.find(t => t.id === watchedTransactionId);
+        if (!selectedTx?.transactionTypeId || !selectedTx?.subServiceId) return;
+
+        const fetchStages = async () => {
+            try {
+                const stagesPath = getTenantPath(`transactionTypes/${selectedTx.transactionTypeId}/subServices/${selectedTx.subServiceId}/workStages`, tenantId);
+                const snap = await getDocs(query(collection(firestore, stagesPath!), orderBy('order')));
+                const stages = snap.docs.map(d => ({ value: d.data().name, label: d.data().name }));
+                setSpecificWorkStages([{ value: 'عند التوقيع', label: 'عند التوقيع' }, ...stages]);
+            } catch (e) { console.error(e); }
+        };
+        fetchStages();
+    }, [watchedTransactionId, clientTransactions, firestore, tenantId]);
+
+    const showWorkNature = useMemo(() => {
+        const selectedTx = clientTransactions.find(t => t.id === watchedTransactionId);
+        if (!selectedTx || !transactionTypesData) return false;
+        const type = transactionTypesData.find(t => t.id === selectedTx.transactionTypeId);
+        return type?.activityType === 'construction';
+    }, [clientTransactions, watchedTransactionId, transactionTypesData]);
+
+    const wbsOptions = useMemo(() => [
+        { value: 'عند التوقيع', label: 'عند التوقيع' },
+        ...specificWorkStages
+    ], [specificWorkStages]);
+
+    const templateOptions = useMemo(() => templates.map(t => ({ value: t.id!, label: t.title })), [templates]);
+
+    const handleTemplateSelect = (templateId: string) => {
+        const template = templates.find(t => t.id === templateId);
+        if (!template) return;
+        
+        setImportedTemplateId(templateId);
+        setValue('workNature', template.workNature || 'labor_only');
+        setValue('financialsType', template.financials?.type || 'fixed', { shouldValidate: true });
+        setValue('totalAmount', template.financials?.totalAmount || 0, { shouldValidate: true });
+        
+        if (template.financials?.milestones) {
+            const newClauses = template.financials.milestones.map((m, idx) => ({
+                id: generateId(),
+                name: m.name || `الدفعة ${arabicOrdinals[idx] || (idx + 1)}`,
+                condition: m.condition || '',
+                amount: template.financials?.type === 'fixed' ? Number(m.value) : 0,
+                percentage: template.financials?.type === 'percentage' ? Number(m.value) : 0,
+            }));
+            replaceClauses(newClauses);
+        }
+        toast({ title: 'تم جلب الدفعات من القالب' });
+    };
+
+    const clientOptions = useMemo(() => allClients.map(c => ({ value: c.id!, label: c.nameAr })), [allClients]);
+    const transactionOptions = useMemo(() => clientTransactions.map(tx => ({ 
+        value: tx.id!, label: `${tx.subServiceName || tx.transactionType} (${tx.transactionNumber})` 
+    })), [clientTransactions]);
+
+    const onSubmit = async (data: ContractValues) => {
+        if (!firestore || !currentUser || !tenantId || savingRef.current) return;
+        
+        const totalToSave = financialsType === 'fixed' ? currentTotalCalculated : (data.totalAmount || 0);
+        if (financialsType === 'percentage' && currentTotalCalculated !== 100) {
+            toast({ variant: 'destructive', title: 'خطأ', description: 'مجموع نسب الدفعات يجب أن يكون 100%.' });
+            return;
+        }
+
+        savingRef.current = true;
+        setIsSaving(true);
+
+        try {
+            const selectedClient = allClients.find(c => c.id === data.clientId);
+            const selectedTx = clientTransactions.find(t => t.id === data.transactionId);
+
+            if (!selectedClient || !selectedTx) throw new Error("يرجى اختيار العميل والمعاملة.");
+
+            const coaPath = getTenantPath('chartOfAccounts', tenantId)!;
+            const revenueAccSnap = await getDocs(query(collection(firestore, coaPath), where('code', '==', '4101'), limit(1)));
+            const clientAccSnap = await getDocs(query(collection(firestore, coaPath), where('name', '==', selectedClient.nameAr), where('parentCode', '==', '1102'), limit(1)));
+
+            await runTransaction(firestore, async (transaction_fs) => {
+                const currentYear = new Date().getFullYear();
+                
+                const jeCounterRef = doc(firestore, getTenantPath('counters/journalEntries', tenantId)!);
+                const coaSubCounterRef = doc(firestore, getTenantPath('counters/coa_clients', tenantId)!);
+                
+                const [jeCounterDoc, coaSubCounterDoc] = await Promise.all([
+                    transaction_fs.get(jeCounterRef),
+                    transaction_fs.get(coaSubCounterRef)
+                ]);
+
+                let clientAccountId = '';
+                if (clientAccSnap.empty) {
+                    const nextClientNum = (coaSubCounterDoc.data()?.lastNumber || 0) + 1;
+                    const clientCode = `1102C${String(nextClientNum).padStart(4, '0')}`;
+                    const newAccRef = doc(collection(firestore, coaPath));
+                    clientAccountId = newAccRef.id;
+                    transaction_fs.set(newAccRef, {
+                        code: clientCode, name: selectedClient.nameAr, type: 'asset', level: 3,
+                        parentCode: '1102', isPayable: true, statement: 'Balance Sheet', balanceType: 'Debit',
+                        companyId: tenantId, createdAt: serverTimestamp()
+                    });
+                    transaction_fs.set(coaSubCounterRef, { lastNumber: nextClientNum }, { merge: true });
+                } else {
+                    clientAccountId = clientAccSnap.docs[0].id;
+                }
+
+                const txPath = getTenantPath(`clients/${data.clientId}/transactions/${data.transactionId}`, tenantId);
+                const txRef = doc(firestore, txPath!);
+                
+                const finalClauses = data.clauses.map((c: any) => {
+                    const amt = financialsType === 'percentage' ? (Number(c.percentage) / 100) * (data.totalAmount || 0) : (Number(c.amount) || 0);
+                    return { ...c, amount: amt, status: 'غير مستحقة', percentage: Number(c.percentage) || 0 };
+                });
+
+                transaction_fs.update(txRef, {
+                    status: 'in-progress',
+                    contract: cleanFirestoreData({
+                        clauses: finalClauses,
+                        totalAmount: totalToSave,
+                        financialsType: data.financialsType,
+                        specs: { 
+                            totalArea: data.totalArea || 0, floorsCount: data.floorsCount || 1, 
+                            basementType: data.basementType, roofExtension: data.roofExtension, 
+                            workNature: showWorkNature ? data.workNature : 'consulting' 
+                        }
+                    }),
+                    updatedAt: serverTimestamp()
+                });
+
+                const nextJeNum = ((jeCounterDoc.data()?.counts || {})[currentYear] || 0) + 1;
+                const newJeRef = doc(collection(firestore, getTenantPath('journalEntries', tenantId)!));
+
+                transaction_fs.set(newJeRef, cleanFirestoreData({
+                    entryNumber: `JV-${currentYear}-${String(nextJeNum).padStart(4, '0')}`,
+                    date: serverTimestamp(), 
+                    narration: `عقد: ${selectedTx.subServiceName || selectedTx.transactionType} لـ ${selectedClient.nameAr}`,
+                    totalDebit: totalToSave, totalCredit: totalToSave, status: 'draft',
+                    lines: [
+                        { accountId: clientAccountId, accountName: selectedClient.nameAr, debit: totalToSave, credit: 0, auto_profit_center: data.transactionId },
+                        { accountId: revenueAccSnap.docs[0]?.id || '4101', accountName: revenueAccSnap.docs[0]?.data()?.name || 'إيرادات عقود', debit: 0, credit: totalToSave, auto_profit_center: data.transactionId }
+                    ],
+                    clientId: data.clientId, transactionId: data.transactionId, createdAt: serverTimestamp(), createdBy: currentUser.id, companyId: tenantId
+                }));
+
+                transaction_fs.set(jeCounterRef, { [`counts.${currentYear}`]: nextJeNum }, { merge: true });
+                transaction_fs.update(doc(firestore, getTenantPath(`clients/${data.clientId}`, tenantId)!), { status: 'contracted' });
+            });
+
+            toast({ title: 'تم حفظ العقد بنجاح' });
+            router.push(`/dashboard/clients/${data.clientId}`);
+        } catch (e: any) {
+            toast({ variant: 'destructive', title: 'خطأ', description: e.message });
+            setIsSaving(false);
+            savingRef.current = false;
+        }
+    };
+
+    return (
+        <div className="max-w-5xl mx-auto space-y-8 pb-20" dir="rtl">
+            <Card className="rounded-[2.5rem] border-none shadow-2xl overflow-hidden bg-gradient-to-r from-[#FF7A00] to-[#FFB000] text-white relative">
+                <div className="absolute top-0 right-0 w-80 h-full bg-white/10 -skew-x-12 transform translate-x-32 pointer-events-none" />
+                <CardHeader className="p-10 relative z-10">
+                    <div className="flex flex-col md:flex-row justify-between items-center gap-8">
+                        <div className="flex items-center gap-6">
+                            <div className="p-5 bg-white/20 rounded-[2rem] backdrop-blur-xl border border-white/40 shadow-2xl"><FileSignature className="h-10 w-10 text-white" /></div>
+                            <div className="text-right">
+                                <CardTitle className="text-3xl font-black text-white tracking-tighter">حفظ عقد جديد</CardTitle>
+                                <CardDescription className="text-white/90 font-bold text-sm">تسجيل بيانات العقد والدفعات المالية للعميل.</CardDescription>
+                            </div>
+                        </div>
+                        <Button type="button" onClick={() => router.back()} variant="outline" className="h-12 px-8 rounded-2xl font-black bg-white/10 text-white border-white/40 hover:bg-white/20 no-print"><ArrowRight className="h-5 w-5" /> تراجع</Button>
+                    </div>
+                </CardHeader>
+            </Card>
+
+            <form onSubmit={handleSubmit(onSubmit, (e) => console.error(e))}>
+                <Card className="rounded-[3rem] border-none shadow-xl overflow-hidden bg-white/95">
+                    <CardContent className="p-10 space-y-10">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                            <div className="grid gap-3">
+                                <Label className="font-black text-[11px] uppercase text-slate-400 tracking-widest pr-2 flex items-center gap-2"><User className="h-3 w-3 text-[#FF7A00]"/> العميل المستهدف *</Label>
+                                <Controller control={control} name="clientId" render={({ field }) => (
+                                    <InlineSearchList value={field.value} onSelect={field.onChange} options={clientOptions} placeholder="ابحث عن عميل..." className="h-14 rounded-2xl border-2" />
+                                )} />
+                            </div>
+                            <div className="grid gap-3">
+                                <Label className="font-black text-[11px] uppercase text-slate-400 tracking-widest pr-2 flex items-center gap-2"><LayoutGrid className="h-3 w-3 text-[#FF7A00]"/> الخدمة المطلوبة *</Label>
+                                <Controller control={control} name="transactionId" render={({ field }) => (
+                                    <InlineSearchList value={field.value} onSelect={field.onChange} options={transactionOptions} placeholder={!watchedClientId ? "اختر عميلاً أولاً" : txLoading ? "جاري التحميل..." : "اختر الخدمة..."} disabled={!watchedClientId || txLoading} className="h-14 rounded-2xl border-2" />
+                                )} />
+                            </div>
+                        </div>
+
+                        <Separator className="opacity-10" />
+
+                        <div className="space-y-8">
+                            <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+                                <h3 className="font-black text-xl text-[#1e1b4b] border-r-8 border-indigo-600 pr-4">بيانات العقد</h3>
+                                <div className="grid gap-3 w-full md:w-80 no-print">
+                                    <Label className="font-black text-[11px] uppercase text-primary tracking-widest pr-2 flex items-center gap-2"><Sparkles className="h-4 w-4 animate-pulse"/> استخدام قالب جاهز</Label>
+                                    <InlineSearchList value={importedTemplateId} onSelect={handleTemplateSelect} options={templateOptions} placeholder="اختر من القوالب..." className="h-11 border-primary/20 bg-primary/5 rounded-2xl" />
+                                </div>
+                            </div>
+
+                            <div className="border-2 rounded-[2.5rem] overflow-hidden shadow-xl bg-white">
+                                <div className="p-8 bg-slate-50/50 border-b-2 border-dashed border-slate-100">
+                                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                                        <div className="grid gap-2"><Label className="text-[10px] font-black uppercase text-slate-400 pr-1 flex items-center gap-1"><Ruler className="h-3 w-3 text-indigo-600" /> المساحة م²</Label><Input type="number" step="any" {...register('totalArea')} onWheel={(e) => e.currentTarget.blur()} placeholder="" className="h-12 rounded-xl border-2 font-black text-lg text-center" /></div>
+                                        <div className="grid gap-2"><Label className="text-[10px] font-black uppercase text-slate-400 pr-1 flex items-center gap-1"><Building2 className="h-3 w-3 text-indigo-600" /> عدد الأدوار</Label><Input type="number" {...register('floorsCount')} onWheel={(e) => e.currentTarget.blur()} placeholder="" className="h-12 rounded-xl border-2 font-black text-lg text-center" /></div>
+                                        <div className="grid gap-2"><Label className="text-[10px] font-black uppercase text-slate-400 pr-1"><Home className="h-3 w-3 text-indigo-600" /> خيار السرداب</Label><Controller name="basementType" control={control} render={({ field }) => (<Select value={field.value} onValueChange={field.onChange}><SelectTrigger className="h-12 rounded-xl border-2 font-black text-sm"><SelectValue /></SelectTrigger><SelectContent dir="rtl"><SelectItem value="none">بدون سرداب</SelectItem><SelectItem value="full">كامل</SelectItem><SelectItem value="half">نص</SelectItem><SelectItem value="vault">قبو</SelectItem></SelectContent></Select>)} /></div>
+                                        <div className="grid gap-2"><Label className="text-[10px] font-black uppercase text-slate-400 pr-1">توسعة السطح</Label><Controller name="roofExtension" control={control} render={({ field }) => (<Select value={field.value} onValueChange={field.onChange}><SelectTrigger className="h-12 rounded-xl border-2 font-black text-sm"><SelectValue /></SelectTrigger><SelectContent dir="rtl"><SelectItem value="none">لا يوجد</SelectItem><SelectItem value="quarter">ربع دور</SelectItem><SelectItem value="half">نصف دور</SelectItem></SelectContent></Select>)} /></div>
+                                    </div>
+                                    {showWorkNature && (
+                                        <div className="mt-6 pt-6 border-t border-dashed border-indigo-100"><div className="grid gap-2 max-w-md"><Label className="font-black text-[10px] text-indigo-700 uppercase pr-1 flex items-center gap-2"><ShieldCheck className="h-3 w-3"/> طبيعة العمل</Label><Controller name="workNature" control={control} render={({field}) => (<Select value={field.value} onValueChange={field.onChange}><SelectTrigger className="h-12 rounded-xl border-2 font-black bg-indigo-50/30 border-indigo-200"><SelectValue /></SelectTrigger><SelectContent dir="rtl"><SelectItem value="labor_only">مصنعية فقط</SelectItem><SelectItem value="with_materials">مع مواد</SelectItem></SelectContent></Select>)}/></div></div>
+                                    )}
+                                </div>
+
+                                <div className="p-8 border-b-2 border-dashed border-slate-100 flex justify-between items-center bg-primary/5">
+                                    <div className="flex items-center gap-4"><div className="p-3 bg-white rounded-2xl text-[#FF7A00] shadow-inner"><Calculator className="h-6 w-6"/></div><Label className="text-xl font-black text-[#1e1b4b]">جدول الدفعات</Label></div>
+                                    <div className="flex items-center gap-4 no-print">
+                                        <div className="grid gap-1"><Label className="text-[10px] font-black text-slate-400 text-center uppercase">نظام الدفع</Label><Controller name="financialsType" control={control} render={({ field }) => (<Select value={field.value} onValueChange={field.onChange}><SelectTrigger className="w-40 h-10 rounded-xl bg-white font-black text-[#FF7A00] border-2"><SelectValue /></SelectTrigger><SelectContent dir="rtl"><SelectItem value="fixed">مبالغ ثابتة</SelectItem><SelectItem value="percentage">نسب مئوية</SelectItem></SelectContent></Select>)}/></div>
+                                        {financialsType === 'percentage' && (<div className="grid gap-1"><Label className="text-[10px] font-black text-slate-400 text-center uppercase">قيمة العقد</Label><Input type="number" step="any" {...register('totalAmount')} onWheel={(e) => e.currentTarget.blur()} className="w-28 h-10 rounded-xl bg-white font-black text-lg text-center border-2" /></div>)}
+                                    </div>
+                                </div>
+
+                                <Table>
+                                    <TableHeader className="bg-slate-900 h-14">
+                                        <TableRow className="border-none">
+                                            <TableHead className="w-24 text-center font-black text-white/40 border-l border-white/10">#</TableHead>
+                                            <TableHead className="px-8 font-black text-white text-right">وصف الدفعة وموعد الاستحقاق</TableHead>
+                                            <TableHead className="text-center font-black text-white w-64">{financialsType === 'percentage' ? 'النسبة (%)' : 'المبلغ'}</TableHead>
+                                            <TableHead className="w-16"></TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {fields.map((field, i) => (
+                                            <TableRow key={field.id} className="h-20 border-b last:border-0 hover:bg-orange-50/10 group">
+                                                <TableCell className="text-center bg-slate-50/50 border-l font-black text-slate-400">{i+1}</TableCell>
+                                                <TableCell className="px-8 space-y-2">
+                                                    <Input {...register(`clauses.${i}.name`)} className="border-none shadow-none font-black text-lg bg-transparent focus-visible:ring-0 text-black p-0" placeholder="اسم الدفعة..." />
+                                                    <Controller control={control} name={`clauses.${i}.condition`} render={({ field: condField }) => (<InlineSearchList value={condField.value} onSelect={condField.onChange} options={wbsOptions} placeholder="موعد الاستحقاق..." allowCustomValue={true} className="h-8 border-dashed border-2 bg-white/50 text-[10px] font-black text-primary" />)} />
+                                                </TableCell>
+                                                <TableCell className="bg-[#FF7A00]/5 border-r">
+                                                    <Input type="number" step="any" {...register(financialsType === 'percentage' ? `clauses.${i}.percentage` : `clauses.${i}.amount`)} onWheel={(e) => e.currentTarget.blur()} placeholder="" className="text-center font-black text-3xl text-[#FF7A00] border-none shadow-none focus-visible:ring-0 bg-transparent font-mono h-14" />
+                                                </TableCell>
+                                                <TableCell className="text-center"><button type="button" onClick={() => remove(i)} className="text-red-300 h-8 w-8 rounded-full hover:bg-red-50 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"><Trash2 className="h-4 w-4"/></button></TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                    <TableFooter className="bg-[#FF7A00]/5 h-24">
+                                        <TableRow className="border-none hover:bg-transparent">
+                                            <TableCell colSpan={2} className="text-right px-10"><p className="text-2xl font-black">إجمالي العقد:</p></TableCell>
+                                            <TableCell className="text-center border-r bg-white"><div className={cn("text-4xl font-black font-mono tracking-tighter", financialsType === 'percentage' && currentTotalCalculated !== 100 ? "text-red-600" : "text-[#FF7A00]")}>{financialsType === 'fixed' ? formatCurrency(currentTotalCalculated) : `${currentTotalCalculated}%`}</div></TableCell>
+                                            <TableCell />
+                                        </TableRow>
+                                    </TableFooter>
+                                </Table>
+                                <div className="p-8 flex justify-center bg-muted/5 border-t"><Button type="button" variant="outline" onClick={() => append({ id: generateId(), name: `الدفعة الجديدة`, condition: '', amount: 0, percentage: 0 })} className="h-12 px-12 rounded-xl border-dashed border-2 font-black text-[#FF7A00] gap-2 hover:bg-white shadow-sm"><PlusCircle className="h-5 w-5" /> إضافة دفعة</Button></div>
+                            </div>
+                        </div>
+                    </CardContent>
+                    <CardFooter className="p-10 border-t bg-muted/10 flex justify-between items-center">
+                        <div className="space-y-1"><p className="text-sm font-black text-[#FF7A00] flex items-center gap-2"><ShieldCheck className="h-5 w-5 animate-pulse"/> سيتم تسجيل العقد وتسجيل حركات الحساب آلياً</p></div>
+                        <Button type="submit" disabled={isSaving || !watchedClientId || !watchedTransactionId || fields.length === 0} className="h-16 px-20 rounded-[2.2rem] font-black text-2xl shadow-xl shadow-primary/30 min-w-[350px] gap-4 bg-[#FF7A00] text-white border-none transition-all active:scale-95 group">{isSaving ? <Loader2 className="animate-spin h-8 w-8" /> : <Save className="h-8 w-8" />}توقيع العقد</Button>
+                    </CardFooter>
+                </Card>
+                {Object.keys(errors).length > 0 && (<Alert variant="destructive" className="mt-6 rounded-3xl border-2"><AlertTriangle className="h-4 w-4" /><AlertTitle className="font-black">بيانات ناقصة</AlertTitle><AlertDescription className="font-bold">يرجى مراجعة كافة حقول الدفعات وتأكد من ملء الموعد لكل دفعة.</AlertDescription></Alert>)}
+            </form>
+        </div>
+    );
+}
+
+export default function NewDirectContractPage() {
+    return (
+        <Suspense fallback={<div className="p-20 text-center"><Loader2 className="animate-spin h-10 w-10 mx-auto text-primary" /></div>}>
+            <DirectContractContent />
+        </Suspense>
+    );
+}

@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { useFirebase, useSubscription } from '@/firebase';
+import { useFirebase, useSubscription } from '@/firebase/index';
 import { useAuth } from '@/context/auth-context';
 
 /**
