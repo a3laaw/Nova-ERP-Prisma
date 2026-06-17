@@ -1,152 +1,143 @@
-'use client';
+'use client'
+import React, { useState, useEffect } from 'react'
+import { useSession } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
+import { Button } from '@/components/ui/button'
+import { LogOut, Building2, Loader2, Bell, Search, Settings } from 'lucide-react'
+import { OfflineIndicator } from '@/context/sync-context'
+import { Input } from '@/components/ui/input'
+import { Badge } from '@/components/ui/badge'
+import Link from 'next/link'
 
-import React, { useState, useEffect } from 'react';
-import { SidebarProvider, Sidebar, SidebarInset } from '@/components/ui/sidebar';
-import { MainNav } from '@/components/layout/main-nav';
-import { Header } from '@/components/layout/header';
-import { useAuth } from '@/context/auth-context';
-import { useSession } from 'next-auth/react';
-import { AlertCircle, RefreshCcw, LogOut } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { useLanguage } from '@/context/language-context';
-import { Button } from '@/components/ui/button';
-import { OfflineIndicator } from '@/context/sync-context';
-import { SystemExpertChatWidget } from '@/components/ai/chat-widget';
-
-/**
- * مكون الجسيمات المتطايرة (Sovereign Particle Renderer)
- */
-function ParticleBackground() {
-    const [particles, setParticles] = useState<any[]>([]);
-    
-    useEffect(() => {
-        const p = Array.from({ length: 25 }).map((_, i) => ({
-            id: i,
-            size: Math.random() * 3 + 1 + 'px',
-            left: Math.random() * 100 + '%',
-            top: Math.random() * 100 + '%',
-            duration: Math.random() * 5 + 5 + 's',
-            delay: Math.random() * 5 + 's',
-        }));
-        setParticles(p);
-    }, []);
-
-    return (
-        <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
-            {particles.map((p) => (
-                <div 
-                    key={p.id}
-                    className="particle"
-                    style={{
-                        width: p.size,
-                        height: p.size,
-                        left: p.left,
-                        top: p.top,
-                        animation: `float-particle ${p.duration} linear infinite`,
-                        animationDelay: p.delay
-                    }}
-                />
-            ))}
-        </div>
-    );
+// Mock user (مؤقتاً — للمراجعة بدون login)
+const MOCK_USER = {
+  id: 'admin',
+  email: 'admin@nova-erp.com',
+  username: 'admin',
+  fullName: 'مدير النظام',
+  name: 'مدير النظام',
+  role: 'admin',
+  currentCompanyId: 'company-1',
+  companyName: 'Nova Engineering',
+  isActive: true,
 }
 
-export default function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const { user, loading, logout } = useAuth();
-  // Fallback: إذا لا يوجد user من useAuth، استخدم session مباشرة
-  const { data: session } = useSession();
-  const effectiveUser = user || (session?.user ? { id: (session.user as any).id, email: session.user.email, username: session.user.name, fullName: session.user.name, role: (session.user as any).role || 'admin', currentCompanyId: (session.user as any).companyId, isActive: true } : null);
-  const router = useRouter();
-  const { language } = useLanguage();
-  
-  const [mounted, setMounted] = useState(false);
-  const [showEmergencyExit, setShowEmergencyExit] = useState(false);
+interface NavItem {
+  labelAr: string
+  labelEn: string
+  icon: any
+  href: string
+  color: string
+}
 
-  useEffect(() => {
-    setMounted(true);
-    const timer = setTimeout(() => {
-      setShowEmergencyExit(true);
-    }, 10000); 
-    return () => clearTimeout(timer);
-  }, []);
+const navSections: { titleAr: string; items: NavItem[] }[] = [
+  {
+    titleAr: 'العمليات',
+    items: [
+      { labelAr: 'العملاء', labelEn: 'Clients', icon: Users, href: '/dashboard/clients', color: 'text-blue-600' },
+      { labelAr: 'المشاريع', labelEn: 'Projects', icon: Briefcase, href: '/dashboard/projects', color: 'text-purple-600' },
+      { labelAr: 'العقود', labelEn: 'Contracts', icon: FileText, href: '/dashboard/contracts', color: 'text-orange-600' },
+      { labelAr: 'المواعيد', labelEn: 'Appointments', icon: CalendarDays, href: '/dashboard/appointments', color: 'text-cyan-600' },
+    ],
+  },
+  {
+    titleAr: 'المالية',
+    items: [
+      { labelAr: 'المحاسبة', labelEn: 'Accounting', icon: Calculator, href: '/dashboard/accounting', color: 'text-emerald-600' },
+      { labelAr: 'التقارير', labelEn: 'Reports', icon: BarChart3, href: '/dashboard/reports', color: 'text-indigo-600' },
+    ],
+  },
+  {
+    titleAr: 'الموارد',
+    items: [
+      { labelAr: 'الموارد البشرية', labelEn: 'HR', icon: UserCircle, href: '/dashboard/hr', color: 'text-sky-600' },
+      { labelAr: 'المقاولات', labelEn: 'Construction', icon: HardHat, href: '/dashboard/construction', color: 'text-amber-600' },
+      { labelAr: 'المشتريات', labelEn: 'Purchasing', icon: ShoppingCart, href: '/dashboard/purchasing', color: 'text-rose-600' },
+      { labelAr: 'المخازن', labelEn: 'Warehouse', icon: Package, href: '/dashboard/warehouse', color: 'text-teal-600' },
+    ],
+  },
+]
 
-  const handleSafeExit = () => {
-    logout();
-    // لا redirect — فقط اعرض loading
-        return null;
-  };
-
-  if (loading || !mounted) {
-    return (
-      <div className="flex h-screen w-full flex-col items-center justify-center bg-[#fdfaf3] relative overflow-hidden" dir="rtl">
-        <ParticleBackground />
-        
-        <main className="relative z-10 flex flex-col items-center justify-center w-full px-6 pointer-events-none">
-            <div className="nova-image-container animate-pulse-nova relative w-full max-w-md aspect-square flex items-center justify-center pointer-events-auto">
-                <img 
-                    alt="Nova Nebula" 
-                    className="w-full h-auto object-contain" 
-                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuAAwUtP2b2CToLjUJ8eDO6iwFczMu5EfgTZXtRhviSqh4p1FZk1EdVK4Mt4nVqBsE5dqYeVMu8ZKJccZdK7tbyOKef7DJvuqjqe3C91u1shEfJJuzX7cQxegYjwyQSlROGi81TaZaihR3hTDDdmUNS0FDGQ03jl0t-q9xzfNX45G0VAEsH9UjbL1QtLp57Dea6Tfs2ENlRLLWbeZoAkkxautawwahzzBFDgFtEH18arUAkbMW9w5QAyhMiJrflIscMibtocPoyrR_o8"
-                />
-            </div>
-        </main>
-
-        <footer className="fixed bottom-16 flex flex-col items-center gap-4 z-10">
-            <div className="flex items-center gap-3">
-                <span className="text-[#ea580c] text-xl font-bold tracking-wide">جاري تحميل نظام Nova...</span>
-                <div className="dot-loader flex gap-1 pt-1">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </div>
-            </div>
-        </footer>
-        
-        {showEmergencyExit && (
-            <div className="absolute bottom-6 animate-in zoom-in-95 duration-500 glass-effect p-4 rounded-3xl border-2 border-white shadow-xl flex gap-3 z-50">
-                <Button onClick={() => window.location.reload()} variant="outline" size="sm" className="h-9 rounded-xl font-bold text-xs border-slate-200 text-black">تحديث</Button>
-                <Button onClick={handleSafeExit} variant="ghost" size="sm" className="h-9 rounded-xl font-bold text-xs text-red-600">خروج</Button>
-            </div>
-        )}
-      </div>
-    );
-  }
-
-  // 🛡️ تصحيح منطق المطور: السماح بدخول الداشبورد للمطور حتى لو لم يكن مرتبطاً بشركة
-  const hasAccess = effectiveUser && ((effectiveUser as any).currentCompanyId || (effectiveUser as any).role === 'Developer' || (effectiveUser as any).role === 'admin');
-
-  if (!hasAccess) {
-    return (
-       <div className="flex h-screen w-full flex-col items-center justify-center gap-4 text-center p-6 bg-[#fdfaf3]" dir="rtl">
-        <div className="p-6 bg-red-50/10 rounded-full border-2 border-red-500/20 mb-4">
-            <AlertCircle className="h-12 w-12 text-red-400 animate-bounce" />
-        </div>
-        <h2 className="text-3xl font-black text-[#1e1b4b]">انتهت جلسة العمل</h2>
-        <p className="text-slate-500 font-bold max-w-xs mx-auto">يرجى إعادة تسجيل الدخول للوصول لبيانات المنشأة.</p>
-        <Button onClick={handleSafeExit} className="bg-[#e87c24] text-white font-black px-16 h-14 rounded-2xl mt-8 shadow-2xl hover:bg-[#d06b1e] active:scale-95 transition-all">دخول</Button>
-      </div>
-    );
-  }
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const router = useRouter()
+  const user = MOCK_USER
 
   return (
-    <div className="relative min-h-screen">
-      <SidebarProvider>
-          <Sidebar side={language === 'ar' ? 'right' : 'left'} className="no-print sidebar-glass border-none">
-            <MainNav currentUser={effectiveUser} onLogout={handleSafeExit} />
-          </Sidebar>
-          <SidebarInset className="flex flex-col h-screen min-w-0 w-full bg-transparent">
-            <Header currentUser={effectiveUser} onLogout={handleSafeExit} className="no-print bg-transparent border-none" />
-            <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 min-w-0">
-              {children}
-            </main>
-            <OfflineIndicator />
-            <SystemExpertChatWidget />
-          </SidebarInset>
-      </SidebarProvider>
+    <div className="min-h-screen flex bg-[#fdfaf3]" dir="rtl">
+      {/* Sidebar */}
+      <aside className={`${sidebarOpen ? 'w-64' : 'w-0'} transition-all duration-300 bg-white border-l border-stone-200 flex flex-col shrink-0 overflow-hidden`}>
+        <div className="p-4 border-b">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-[#F5820D] to-[#FF8F00] rounded-xl flex items-center justify-center">
+              <Building2 className="h-5 w-5 text-white" />
+            </div>
+            <div>
+              <h1 className="font-black text-sm">Nova ERP</h1>
+              <p className="text-[10px] text-stone-400">{user.companyName}</p>
+            </div>
+          </div>
+        </div>
+
+        <nav className="flex-1 overflow-y-auto p-2 space-y-4">
+          <Link href="/dashboard" className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold bg-[#F5820D] text-white">
+            <BarChart3 className="h-4 w-4" /> لوحة التحكم
+          </Link>
+          {navSections.map((section) => (
+            <div key={section.titleAr}>
+              <p className="text-[10px] font-black text-stone-400 uppercase tracking-wider px-3 mb-1">{section.titleAr}</p>
+              {section.items.map((item) => {
+                const Icon = item.icon
+                return (
+                  <Link key={item.href} href={item.href} className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium text-stone-600 hover:bg-stone-100 transition-all">
+                    <Icon className={`h-4 w-4 ${item.color}`} /> {item.labelAr}
+                  </Link>
+                )
+              })}
+            </div>
+          ))}
+        </nav>
+
+        <div className="p-3 border-t">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="w-8 h-8 bg-stone-200 rounded-full flex items-center justify-center text-xs font-bold">م</div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-bold truncate">{user.fullName}</p>
+              <p className="text-[10px] text-stone-400">{user.role}</p>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      {/* Main content */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Header */}
+        <header className="sticky top-0 z-40 border-b bg-white/80 backdrop-blur-sm px-4 py-3 flex items-center gap-3">
+          <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-2 rounded-lg hover:bg-stone-100">
+            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
+          </button>
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-stone-400" />
+            <Input placeholder="ابحث..." className="pr-10 h-9 rounded-lg bg-stone-50 border-stone-200" />
+          </div>
+          <button className="p-2 rounded-lg hover:bg-stone-100 relative">
+            <Bell className="h-5 w-5 text-stone-500" />
+            <span className="absolute top-1 right-1 w-2 h-2 bg-[#F5820D] rounded-full" />
+          </button>
+          <button className="p-2 rounded-lg hover:bg-stone-100">
+            <Settings className="h-5 w-5 text-stone-500" />
+          </button>
+        </header>
+
+        {/* Content */}
+        <main className="flex-1 overflow-auto p-6">
+          {children}
+        </main>
+      </div>
+      <OfflineIndicator />
     </div>
-  );
+  )
 }
+
+// Icons
+import { Users, Briefcase, FileText, CalendarDays, Calculator, BarChart3, UserCircle, HardHat, ShoppingCart, Package } from 'lucide-react'
