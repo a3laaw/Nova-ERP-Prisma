@@ -11,7 +11,7 @@ import {
     Zap, Save, Loader2, GitMerge, Settings2, 
     ArrowRightLeft, PlusCircle, Trash2, Activity
 } from 'lucide-react';
-import { useFirebase, useSubscription } from '@/firebase';
+import { useFirebase, useSubscription } from '@/firebase/index';
 import { collection, doc, addDoc, serverTimestamp, orderBy, deleteDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/auth-context';

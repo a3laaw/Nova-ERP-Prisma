@@ -15,7 +15,7 @@ import {
     FileText,
     Target
 } from 'lucide-react';
-import { useFirebase, useDocument } from '@/firebase';
+import { useFirebase, useDocument } from '@/firebase/index';
 import { useAuth } from '@/context/auth-context';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';

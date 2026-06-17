@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import React from 'react';
 import { useRouter } from 'next/navigation';
-import { useFirebase, useSubscription } from '@/firebase';
+import { useFirebase, useSubscription } from '@/firebase/index';
 import { collection, query, where, addDoc, serverTimestamp, getDocs, orderBy, doc, getDoc } from 'firebase/firestore';
 import type { ConstructionProject, Employee, FieldVisit, WorkTeam } from '@/lib/types';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';

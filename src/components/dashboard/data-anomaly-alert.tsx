@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { useFirebase, useSubscription } from '@/firebase';
+import { useFirebase, useSubscription } from '@/firebase/index';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { ShieldAlert, Loader2, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';

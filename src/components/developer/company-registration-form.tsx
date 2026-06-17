@@ -9,10 +9,10 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { Button } from '../ui/button';
-import { Input } from '../ui/input';
-import { Label } from '../ui/label';
-import { useFirebase } from '@/firebase';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { useFirebase } from '@/firebase/index';
 import { doc, writeBatch, serverTimestamp, getDocs, query, where, Timestamp, collection } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Save, DatabaseZap, X, ShieldCheck, CreditCard, Users, RefreshCw } from 'lucide-react';
@@ -21,8 +21,8 @@ import type { Company } from '@/lib/types';
 import { addDays, addMonths } from 'date-fns';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { DateInput } from '../ui/date-input';
-import { Switch } from '../ui/switch';
+import { DateInput } from '@/components/ui/date-input';
+import { Switch } from '@/components/ui/switch';
 
 interface Props {
   isOpen: boolean;

@@ -30,7 +30,7 @@ import {
   TableHeader, 
   TableRow 
 } from '@/components/ui/table';
-import { useFirebase, useSubscription } from '@/firebase';
+import { useFirebase, useSubscription } from '@/firebase/index';
 import { useToast } from '@/hooks/use-toast';
 import { collection, query, where, getDocs, writeBatch, doc, getDoc, serverTimestamp, updateDoc, Timestamp, orderBy, limit, collectionGroup, deleteDoc } from 'firebase/firestore';
 import * as XLSX from 'xlsx';

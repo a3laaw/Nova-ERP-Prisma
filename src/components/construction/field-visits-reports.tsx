@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { useFirebase, useSubscription } from '@/firebase';
+import { useFirebase, useSubscription } from '@/firebase/index';
 import { query, orderBy, where } from 'firebase/firestore';
 import type { FieldVisit, ConstructionProject, WorkTeam } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';

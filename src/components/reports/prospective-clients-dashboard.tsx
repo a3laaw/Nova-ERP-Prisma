@@ -2,8 +2,8 @@
 'use client';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { NoShowClientsReport } from './no-show-clients-report';
-import { FollowUpClientsReport } from './follow-up-clients-report';
+import { NoShowClientsReport } from '@/components/reports/no-show-clients-report';
+import { FollowUpClientsReport } from '@/components/reports/follow-up-clients-report';
 import type { Appointment, Client, Employee, ClientTransaction } from '@/lib/types';
 
 interface Props {

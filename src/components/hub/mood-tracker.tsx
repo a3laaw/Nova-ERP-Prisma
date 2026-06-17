@@ -4,13 +4,13 @@ import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useFirebase } from '@/firebase';
+import { useFirebase } from '@/firebase/index';
 import { useAuth } from '@/context/auth-context';
 import { doc, updateDoc, serverTimestamp, collection, addDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Send, Target, Sparkles } from 'lucide-react';
 import { cn, getTenantPath, cleanFirestoreData } from '@/lib/utils';
-import { Label } from '../ui/label';
+import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 
 const moods = [

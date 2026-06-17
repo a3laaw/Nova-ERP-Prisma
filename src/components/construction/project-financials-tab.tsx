@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { useFirebase, useSubscription } from '@/firebase';
+import { useFirebase, useSubscription } from '@/firebase/index';
 import { where } from 'firebase/firestore';
 import type { ConstructionProject, SubcontractorCertificate, CashReceipt } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -30,8 +30,8 @@ import {
     PieChart,
     Pie
 } from 'recharts';
-import { Label } from '../ui/label';
-import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
+import { Label } from '@/components/ui/label';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 interface ProjectFinancialsTabProps {
   project: ConstructionProject;

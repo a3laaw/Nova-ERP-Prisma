@@ -2,17 +2,17 @@
 
 import { useState, useMemo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
-import { Button } from '../ui/button';
-import { Label } from '../ui/label';
-import { useFirebase } from '@/firebase';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { useFirebase } from '@/firebase/index';
 import { useToast } from '@/hooks/use-toast';
 import { doc, runTransaction, collection, writeBatch, serverTimestamp, getDoc } from 'firebase/firestore';
 import type { Account, JournalEntry } from '@/lib/types';
-import { InlineSearchList } from '../ui/inline-search-list';
+import { InlineSearchList } from '@/components/ui/inline-search-list';
 import { Loader2, Save } from 'lucide-react';
 import { useAuth } from '@/context/auth-context';
 import { formatCurrency } from '@/lib/utils';
-import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 interface BankTransaction {
   id: string;

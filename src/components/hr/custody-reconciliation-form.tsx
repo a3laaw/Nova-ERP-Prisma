@@ -13,10 +13,10 @@ import {
   CardTitle,
   CardFooter,
 } from '@/components/ui/card';
-import { Button } from '../ui/button';
-import { Input } from '../ui/input';
-import { Label } from '../ui/label';
-import { Textarea } from '../ui/textarea';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import {
   Table,
@@ -44,7 +44,7 @@ import {
   ChevronLeft,
   Sparkles,
 } from 'lucide-react';
-import { useFirebase, useStorage } from '@/firebase';
+import { useFirebase, useStorage } from '@/firebase/index';
 import { useSubscription } from '@/hooks/use-subscription';
 import {
   collection,

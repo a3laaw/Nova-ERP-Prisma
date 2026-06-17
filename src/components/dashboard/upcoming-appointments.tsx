@@ -18,7 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { useFirebase } from '@/firebase';
+import { useFirebase } from '@/firebase/index';
 import { collection, query, where, orderBy, limit, Timestamp, getDocs } from 'firebase/firestore';
 import { format } from 'date-fns';
 import { useAuth } from '@/context/auth-context';
@@ -26,7 +26,7 @@ import { getTenantPath } from '@/lib/utils';
 import { ar } from 'date-fns/locale';
 import { useLanguage } from '@/context/language-context';
 import type { Appointment, Client, Employee } from '@/lib/types';
-import { Skeleton } from '../ui/skeleton';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useSubscription } from '@/hooks/use-subscription';
 import { toFirestoreDate } from '@/services/date-converter';
 

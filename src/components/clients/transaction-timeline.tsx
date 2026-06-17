@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { useAuth } from '@/context/auth-context';
-import { useFirebase } from '@/firebase';
+import { useFirebase } from '@/firebase/index';
 import { collection, addDoc, serverTimestamp, query, where, getDocs, doc } from 'firebase/firestore'; 
 import { useToast } from '@/hooks/use-toast';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';

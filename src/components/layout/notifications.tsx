@@ -9,10 +9,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Button } from '../ui/button';
+import { Button } from '@/components/ui/button';
 import { Bell, Circle, Loader2, Sparkles } from 'lucide-react';
-import { Badge } from '../ui/badge';
-import { useFirebase } from '@/firebase';
+import { Badge } from '@/components/ui/badge';
+import { useFirebase } from '@/firebase/index';
 import { doc, updateDoc } from 'firebase/firestore';
 import { formatDistanceToNow } from 'date-fns';
 import { ar } from 'date-fns/locale';

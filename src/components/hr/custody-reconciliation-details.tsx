@@ -2,12 +2,12 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useFirebase, useDocument, useSubscription } from '@/firebase';
+import { useFirebase, useDocument, useSubscription } from '@/firebase/index';
 import { doc, runTransaction, collection, serverTimestamp, getDocs, query, where, Timestamp, getDoc, orderBy, limit } from 'firebase/firestore';
 import type { CustodyReconciliation, Account, JournalEntry, ConstructionProject, Client, Employee } from '@/lib/types';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
-import { Button } from '../ui/button';
-import { Label } from '../ui/label';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Loader2, Save, ArrowRight, ShieldCheck, Calculator, Target, User, Banknote, ImageIcon, FileText, X, PencilLine, AlertCircle } from 'lucide-react';
@@ -21,7 +21,7 @@ import { useAuth } from '@/context/auth-context';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
-import { Input } from '../ui/input';
+import { Input } from '@/components/ui/input';
 import Image from 'next/image';
 
 const statusTranslations: Record<string, string> = {

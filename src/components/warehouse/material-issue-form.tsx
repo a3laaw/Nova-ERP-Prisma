@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from '@/components/ui/table';
 import { Loader2, Save, X, PlusCircle, Trash2, Building2, Search, Info, ShoppingCart, User, ShieldCheck } from 'lucide-react';
-import { useFirebase, useSubscription } from '@/firebase';
+import { useFirebase, useSubscription } from '@/firebase/index';
 import { collection, query, where, getDocs, runTransaction, doc, getDoc, serverTimestamp, orderBy, collectionGroup, Timestamp } from 'firebase/firestore';
 import type { Item, ClientTransaction, Account, Employee, Department, BoqItem, ItemCategory, Warehouse, Client } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
@@ -18,7 +18,7 @@ import { formatCurrency, cleanFirestoreData, getTenantPath } from '@/lib/utils';
 import { InlineSearchList } from '@/components/ui/inline-search-list';
 import { useAuth } from '@/context/auth-context';
 import { DateInput } from '@/components/ui/date-input';
-import { Badge } from '../ui/badge';
+import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { addYears } from 'date-fns';
 

@@ -5,7 +5,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Users } from 'lucide-react';
 import Link from 'next/link';
 import type { Client, ClientTransaction } from '@/lib/types';
-import { Button } from '../ui/button';
+import { Button } from '@/components/ui/button';
 
 interface FollowUpClientsReportProps {
     clients: Client[];

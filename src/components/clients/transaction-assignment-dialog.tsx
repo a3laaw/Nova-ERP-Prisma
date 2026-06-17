@@ -10,15 +10,15 @@ import {
     DialogDescription, 
     DialogFooter 
 } from '@/components/ui/dialog';
-import { Button } from '../ui/button';
-import { Label } from '../ui/label';
-import { useFirebase, useSubscription } from '@/firebase';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { useFirebase, useSubscription } from '@/firebase/index';
 import { useAuth } from '@/context/auth-context';
 import { useToast } from '@/hooks/use-toast';
 import { doc, updateDoc, serverTimestamp, collection, addDoc } from 'firebase/firestore';
 import { UserCheck, Loader2, Save, Send, ShieldCheck } from 'lucide-react';
 import type { Employee, ClientTransaction } from '@/lib/types';
-import { InlineSearchList } from '../ui/inline-search-list';
+import { InlineSearchList } from '@/components/ui/inline-search-list';
 import { cleanFirestoreData, getTenantPath } from '@/lib/utils';
 import { createNotification, findUserIdByEmployeeId } from '@/services/notification-service';
 

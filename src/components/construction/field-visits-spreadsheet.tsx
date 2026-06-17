@@ -4,7 +4,7 @@ import * as React from 'react';
 import { useForm, useFieldArray, Controller, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { useFirebase, useSubscription } from '@/firebase';
+import { useFirebase, useSubscription } from '@/firebase/index';
 import { collection, query, getDocs, writeBatch, serverTimestamp, doc, orderBy, where, Timestamp } from 'firebase/firestore';
 import type { ConstructionProject, Employee, FieldVisit, WorkTeam } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';

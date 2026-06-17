@@ -1,11 +1,11 @@
 'use client';
 
 import React, { useRef, useState } from 'react';
-import { PrintHeader } from './print-header';
-import { PrintFooter } from './print-footer';
+import { PrintHeader } from '@/components/print/print-header';
+import { PrintFooter } from '@/components/print/print-footer';
 import { usePrintSettings } from '@/hooks/use-print-settings';
-import { Skeleton } from '../ui/skeleton';
-import { Button } from '../ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
 import { FileDown, Loader2, Printer, Eye } from 'lucide-react';
 import { cn } from '@/lib/utils';
 

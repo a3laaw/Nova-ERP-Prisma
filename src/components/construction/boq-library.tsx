@@ -1,6 +1,6 @@
 'use client';
 import { useState, useMemo } from 'react';
-import { useFirebase, useSubscription } from '@/firebase';
+import { useFirebase, useSubscription } from '@/firebase/index';
 import { collection, query, orderBy, doc, deleteDoc, getDocs, where } from 'firebase/firestore';
 import type { Boq, ConstructionProject } from '@/lib/types';
 import {
@@ -20,7 +20,7 @@ import { format } from 'date-fns';
 import { toFirestoreDate } from '@/services/date-converter';
 import Fuse from 'fuse.js';
 import { formatCurrency, cn } from '@/lib/utils';
-import { Badge } from '../ui/badge';
+import { Badge } from '@/components/ui/badge';
 import {
   DropdownMenu,
   DropdownMenuContent,

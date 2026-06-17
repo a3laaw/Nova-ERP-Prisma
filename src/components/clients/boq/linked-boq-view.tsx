@@ -1,6 +1,6 @@
 'use client';
 import { useMemo } from 'react';
-import { useFirebase, useDocument, useSubscription } from '@/firebase';
+import { useFirebase, useDocument, useSubscription } from '@/firebase/index';
 import type { Boq, BoqItem } from '@/lib/types';
 import { doc, collection, query, orderBy } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';

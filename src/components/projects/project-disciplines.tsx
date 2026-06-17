@@ -1,9 +1,9 @@
 
 'use client';
 import type { Project, EngineeringDiscipline } from '@/lib/types';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../ui/card';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion';
-import { Progress } from '../ui/progress';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
 import { CheckCircle, CircleDashed, Loader } from 'lucide-react';
 import { useLanguage } from '@/context/language-context';

@@ -10,13 +10,13 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useFirebase, useSubscription } from '@/firebase';
+import { useFirebase, useSubscription } from '@/firebase/index';
 import { orderBy, doc, deleteDoc } from 'firebase/firestore';
 import type { CustodyReconciliation } from '@/lib/types';
 import { format } from 'date-fns';
 import { formatCurrency, cn } from '@/lib/utils';
 import { Eye, MoreHorizontal, Trash2, Loader2, Search, Wallet, CheckCircle2, Clock } from 'lucide-react';
-import { Badge } from '../ui/badge';
+import { Badge } from '@/components/ui/badge';
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -24,12 +24,12 @@ import {
   DropdownMenuLabel, 
   DropdownMenuSeparator, // FIXED: Added missing separator import
   DropdownMenuTrigger 
-} from '../ui/dropdown-menu';
-import { Button } from '../ui/button';
+} from '@/components/ui/dropdown-menu';
+import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '../ui/alert-dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
-import { Input } from '../ui/input';
+import { Input } from '@/components/ui/input';
 import { toFirestoreDate } from '@/services/date-converter';
 import Link from 'next/link';
 

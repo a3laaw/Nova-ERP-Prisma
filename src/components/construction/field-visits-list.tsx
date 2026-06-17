@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { useFirebase, useSubscription } from '@/firebase';
+import { useFirebase, useSubscription } from '@/firebase/index';
 import { query, orderBy } from 'firebase/firestore';
 import type { FieldVisit } from '@/lib/types';
 import { format, isToday } from 'date-fns';

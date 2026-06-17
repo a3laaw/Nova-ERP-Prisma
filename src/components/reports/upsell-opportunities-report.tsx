@@ -5,7 +5,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { ShoppingBag } from 'lucide-react';
 import Link from 'next/link';
 import type { Client, ClientTransaction } from '@/lib/types';
-import { Badge } from '../ui/badge';
+import { Badge } from '@/components/ui/badge';
 
 interface UpsellOpportunitiesReportProps {
     transactions: (ClientTransaction & { clientId: string })[];

@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { StatCard } from './stat-card';
+import { StatCard } from '@/components/dashboard/stat-card';
 import { 
     Users, 
     CalendarX, 

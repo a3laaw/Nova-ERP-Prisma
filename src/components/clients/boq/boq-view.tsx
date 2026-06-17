@@ -5,7 +5,7 @@ import * as React from 'react';
 import { useForm, useFieldArray, Controller, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { useFirebase, useSubscription } from '@/firebase';
+import { useFirebase, useSubscription } from '@/firebase/index';
 import { useToast } from '@/hooks/use-toast';
 import { collection, doc, writeBatch, serverTimestamp, getDocs, query, orderBy, deleteDoc, updateDoc, addDoc } from 'firebase/firestore';
 import type { BoqItem, BoqReferenceItem } from '@/lib/types';

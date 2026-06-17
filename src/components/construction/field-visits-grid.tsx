@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { useFirebase, useSubscription } from '@/firebase';
+import { useFirebase, useSubscription } from '@/firebase/index';
 import { orderBy } from 'firebase/firestore';
 import type { FieldVisit } from '@/lib/types';
 import { toFirestoreDate } from '@/services/date-converter';

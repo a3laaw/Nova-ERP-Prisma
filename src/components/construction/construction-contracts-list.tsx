@@ -2,7 +2,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { useFirebase, useSubscription } from '@/firebase';
+import { useFirebase, useSubscription } from '@/firebase/index';
 import { orderBy, where } from 'firebase/firestore';
 import type { ClientTransaction, Client } from '@/lib/types';
 import {

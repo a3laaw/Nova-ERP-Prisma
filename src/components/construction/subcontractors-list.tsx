@@ -11,18 +11,18 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useFirebase } from '@/firebase';
+import { useFirebase } from '@/firebase/index';
 import { useSubscription } from '@/hooks/use-subscription';
 import { collection, query, orderBy, doc, deleteDoc } from 'firebase/firestore';
 import type { Subcontractor } from '@/lib/types';
 import { MoreHorizontal, Pencil, Trash2, Search, PlusCircle, Star } from 'lucide-react';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../ui/dropdown-menu';
-import { Button } from '../ui/button';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '../ui/alert-dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Button } from '@/components/ui/button';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
-import { Input } from '../ui/input';
+import { Input } from '@/components/ui/input';
 import Fuse from 'fuse.js';
-import { SubcontractorForm } from './subcontractor-form';
+import { SubcontractorForm } from '@/components/construction/subcontractor-form';
 
 export function SubcontractorsList() {
   const { firestore } = useFirebase();

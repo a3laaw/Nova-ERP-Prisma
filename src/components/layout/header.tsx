@@ -20,9 +20,9 @@ import {
 import { useLanguage } from '@/context/language-context';
 import type { AuthenticatedUser } from '@/context/auth-context';
 import { cn } from '@/lib/utils';
-import { Notifications } from './notifications';
+import { Notifications } from '@/components/layout/notifications';
 import Link from 'next/link';
-import { Breadcrumbs } from './breadcrumbs';
+import { Breadcrumbs } from '@/components/layout/breadcrumbs';
 import { useAppTheme } from '@/context/theme-context';
 import { Separator } from '@/components/ui/separator';
 import {
@@ -33,7 +33,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 interface HeaderProps {
     currentUser: AuthenticatedUser;

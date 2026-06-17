@@ -23,23 +23,23 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Button } from '../ui/button';
+import { Button } from '@/components/ui/button';
 import { PlusCircle, MoreHorizontal, Trash2, Loader2, X, Pencil, CheckCircle, Eye, AlertCircle, MessageSquare, Undo2, Home, PlaneTakeoff } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Badge } from '../ui/badge';
+import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { LeaveRequest } from '@/lib/types';
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
 import { toFirestoreDate } from '@/services/date-converter';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '../ui/dropdown-menu';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '../ui/alert-dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/auth-context';
 import { cn, getTenantPath } from '@/lib/utils';
 import Link from 'next/link';
-import { Textarea } from '../ui/textarea';
-import { Label } from '../ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 import { createNotification, findUserIdByEmployeeId } from '@/services/notification-service';
 
 const statusColors: Record<string, string> = {

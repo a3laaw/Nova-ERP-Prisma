@@ -19,18 +19,18 @@ import {
   TableRow,
   TableFooter
 } from '@/components/ui/table';
-import { Button } from '../ui/button';
-import { Input } from '../ui/input';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, Save, X, FileSignature, Calculator, ShieldCheck } from 'lucide-react';
-import { useFirebase } from '@/firebase';
+import { useFirebase } from '@/firebase/index';
 import { useAuth } from '@/context/auth-context';
 import { doc, collection, serverTimestamp, getDocs, query, runTransaction, limit, where, orderBy, getDoc, Timestamp } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { formatCurrency, cleanFirestoreData, getTenantPath } from '@/lib/utils';
-import { Label } from '../ui/label';
-import { ScrollArea } from '../ui/scroll-area';
-import { InlineSearchList } from '../ui/inline-search-list';
+import { Label } from '@/components/ui/label';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { InlineSearchList } from '@/components/ui/inline-search-list';
 
 const generateId = () => Math.random().toString(36).substring(2, 9);
 const arabicOrdinals = ['الأولى', 'الثانية', 'الثالثة', 'الرابعة', 'الخامسة', 'السادسة', 'السابعة', 'الثامنة', 'التاسعة', 'العاشرة'];

@@ -10,11 +10,11 @@ import {
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { AlertCircle, Trash2, Loader2 } from 'lucide-react';
-import { useFirebase, useSubscription } from '@/firebase';
+import { useFirebase, useSubscription } from '@/firebase/index';
 import { useAuth } from '@/context/auth-context';
 import { collection, query, where, getDocs, limit, type QueryConstraint, doc, deleteDoc } from 'firebase/firestore';
 import type { Appointment, Client } from '@/lib/types';
-import { Skeleton } from '../ui/skeleton';
+import { Skeleton } from '@/components/ui/skeleton';
 import { format, isPast } from 'date-fns';
 import { ar } from 'date-fns/locale';
 import { toFirestoreDate } from '@/services/date-converter';

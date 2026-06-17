@@ -19,7 +19,7 @@ import {
     Percent,
     Clock
 } from 'lucide-react';
-import { useFirebase, useDocument } from '@/firebase';
+import { useFirebase, useDocument } from '@/firebase/index';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/auth-context';

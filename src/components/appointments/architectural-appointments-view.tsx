@@ -24,9 +24,9 @@ import { CalendarIcon, Loader2, Eye, Pencil, Trash2, CheckCircle, MousePointer2,
 import { getTenantPath, cleanFirestoreData } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import type { Appointment, Client, Employee, LeaveRequest } from '@/lib/types';
-import { InlineSearchList } from '../ui/inline-search-list';
+import { InlineSearchList } from '@/components/ui/inline-search-list';
 import { useRouter } from 'next/navigation';
-import { Checkbox } from '../ui/checkbox';
+import { Checkbox } from '@/components/ui/checkbox';
 import { toFirestoreDate } from '@/services/date-converter';
 import { useAuth } from '@/context/auth-context';
 import { useBranding } from '@/context/branding-context';

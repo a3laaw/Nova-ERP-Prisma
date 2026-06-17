@@ -11,7 +11,7 @@ import {
     PlusCircle, Trash2, LayoutGrid, Save, Loader2, 
     Layers, Workflow, Network
 } from 'lucide-react';
-import { useFirebase, useSubscription } from '@/firebase';
+import { useFirebase, useSubscription } from '@/firebase/index';
 import { collection, addDoc, serverTimestamp, orderBy } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/auth-context';

@@ -2,7 +2,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { useFirebase, useSubscription } from '@/firebase';
+import { useFirebase, useSubscription } from '@/firebase/index';
 import { query, orderBy } from 'firebase/firestore';
 import type { DailySiteReport } from '@/lib/types';
 import { format } from 'date-fns';

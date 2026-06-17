@@ -14,7 +14,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Printer } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { useSubscription, useFirebase } from '@/firebase';
+import { useSubscription, useFirebase } from '@/firebase/index';
 import type { Payslip, Employee } from '@/lib/types';
 import Link from 'next/link';
 

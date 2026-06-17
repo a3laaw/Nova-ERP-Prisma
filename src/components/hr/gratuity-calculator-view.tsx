@@ -10,8 +10,8 @@ import {
   CardTitle,
   CardFooter,
 } from '@/components/ui/card';
-import { Button } from '../ui/button';
-import { Label } from '../ui/label';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
@@ -19,17 +19,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useFirebase } from '@/firebase';
+import { useFirebase } from '@/firebase/index';
 import type { Employee } from '@/lib/types';
-import { InlineSearchList } from '../ui/inline-search-list';
+import { InlineSearchList } from '@/components/ui/inline-search-list';
 import { useSubscription } from '@/hooks/use-subscription';
 import { calculateGratuity } from '@/services/leave-calculator';
 import { formatCurrency, cn } from '@/lib/utils';
 import { Calculator, Info, AlertTriangle, Scale, Landmark, Clock, FileCheck, ShieldAlert } from 'lucide-react';
-import { Separator } from '../ui/separator';
-import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
-import { DateInput } from '../ui/date-input';
-import { Badge } from '../ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { DateInput } from '@/components/ui/date-input';
+import { Badge } from '@/components/ui/badge';
 
 interface GratuityResult {
     gratuity: number;

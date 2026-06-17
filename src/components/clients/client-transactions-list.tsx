@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { useFirebase } from '@/firebase';
+import { useFirebase } from '@/firebase/index';
 import {
     collection, query, where, orderBy, onSnapshot,
     doc, writeBatch, serverTimestamp, updateDoc, addDoc, getDoc, runTransaction

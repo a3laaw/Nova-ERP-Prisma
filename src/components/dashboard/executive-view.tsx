@@ -2,21 +2,21 @@
 
 import { useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
-import { StatCard } from './stat-card';
+import { StatCard } from '@/components/dashboard/stat-card';
 import { 
     TrendingUp, Wallet, Activity, Users, Sparkles, 
     Building2, ArrowUpRight, Palette, ListChecks, CheckCircle2, Clock
 } from 'lucide-react';
 import { formatCurrency, cn, getTenantPath } from '@/lib/utils';
-import { RecentActivity } from './recent-activity';
-import { TaskPrioritization } from './task-prioritization';
+import { RecentActivity } from '@/components/dashboard/recent-activity';
+import { TaskPrioritization } from '@/components/dashboard/task-prioritization';
 import Link from 'next/link';
-import { useFirebase, useSubscription } from '@/firebase';
+import { useFirebase, useSubscription } from '@/firebase/index';
 import { toFirestoreDate } from '@/services/date-converter';
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
 import { where, orderBy, limit, updateDoc, doc, serverTimestamp } from 'firebase/firestore';
-import { Skeleton } from '../ui/skeleton';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button'; // 🛡️ التطهير: إضافة الاستيراد المفقود 🛡️
 import { useAuth } from '@/context/auth-context';
 

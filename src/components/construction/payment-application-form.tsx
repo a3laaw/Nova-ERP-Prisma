@@ -34,7 +34,7 @@ import {
   ShieldCheck,
   ArrowDownCircle
 } from 'lucide-react';
-import { useFirebase, useSubscription } from '@/firebase';
+import { useFirebase, useSubscription } from '@/firebase/index';
 import {
   collection,
   runTransaction,
@@ -51,9 +51,9 @@ import { useToast } from '@/hooks/use-toast';
 import { InlineSearchList } from '@/components/ui/inline-search-list';
 import { formatCurrency, cleanFirestoreData, numberToArabicWords } from '@/lib/utils';
 import { useAuth } from '@/context/auth-context';
-import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { DateInput } from '@/components/ui/date-input';
-import { Separator } from '../ui/separator';
+import { Separator } from '@/components/ui/separator';
 
 const itemSchema = z.object({
   boqItemId: z.string(),

@@ -3,16 +3,16 @@
 import * as React from 'react';
 import { useState, useRef, useMemo, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { Textarea } from './textarea';
-import { useFirebase } from '@/firebase';
+import { Textarea } from '@/components/ui/textarea';
+import { useFirebase } from '@/firebase/index';
 import { useSubscription } from '@/hooks/use-subscription';
 import type { UserProfile } from '@/lib/types';
 import { cn } from '@/lib/utils';
-import { Avatar, AvatarFallback, AvatarImage } from './avatar';
-import { ScrollArea } from './scroll-area';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { AtSign, Command } from 'lucide-react';
-import { Card } from './card';
-import { Badge } from './badge';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 
 interface MentionTextareaProps extends React.ComponentProps<typeof Textarea> {
   onValueChange: (value: string) => void;

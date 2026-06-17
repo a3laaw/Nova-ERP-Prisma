@@ -28,7 +28,7 @@ import {
   FileCheck,
   Calculator
 } from 'lucide-react';
-import { useFirebase, useSubscription } from '@/firebase';
+import { useFirebase, useSubscription } from '@/firebase/index';
 import { collection, query, getDocs, runTransaction, doc, getDoc, serverTimestamp, orderBy, where, Timestamp, collectionGroup } from 'firebase/firestore';
 import type { Subcontractor, ConstructionProject, Account, Employee, Department, ClientTransaction } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';

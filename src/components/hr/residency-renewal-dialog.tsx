@@ -10,15 +10,15 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { Button } from '../ui/button';
-import { Input } from '../ui/input';
-import { Label } from '../ui/label';
-import { DateInput } from '../ui/date-input';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { DateInput } from '@/components/ui/date-input';
 import { useToast } from '@/hooks/use-toast';
 import type { Employee, Account } from '@/lib/types';
 import { Loader2, Save } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useFirebase } from '@/firebase';
+import { useFirebase } from '@/firebase/index';
 import { useAuth } from '@/context/auth-context';
 import { collection, doc, runTransaction, serverTimestamp, query, where, getDocs } from 'firebase/firestore';
 import { createNotification, findUserIdByEmployeeId } from '@/services/notification-service';

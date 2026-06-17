@@ -9,7 +9,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { calculateGratuity } from '@/services/leave-calculator';
 import { toFirestoreDate } from '@/services/date-converter';
-import { useFirebase } from '@/firebase';
+import { useFirebase } from '@/firebase/index';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import type { Payslip } from '@/lib/types';
 import { Wallet, Users, HandCoins, FileText, Banknote } from 'lucide-react';

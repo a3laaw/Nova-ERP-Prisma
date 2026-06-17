@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { UserPlus, Calendar, MoreHorizontal, Loader2, Search, Users, Archive, ArchiveRestore } from 'lucide-react';
-import { useFirebase, useSubscription } from '@/firebase';
+import { useFirebase, useSubscription } from '@/firebase/index';
 // Re-importing query, where, orderBy
 import { collection, doc, updateDoc, serverTimestamp, query, where, orderBy, runTransaction } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';

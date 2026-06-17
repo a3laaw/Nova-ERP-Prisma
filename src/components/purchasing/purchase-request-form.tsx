@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from '@/components/ui/table';
 import { Loader2, Save, X, PlusCircle, Trash2, FileStack, Target, Box } from 'lucide-react';
-import { useFirebase, useSubscription } from '@/firebase';
+import { useFirebase, useSubscription } from '@/firebase/index';
 import { collection, addDoc, doc, getDoc, serverTimestamp, orderBy, query, runTransaction } from 'firebase/firestore';
 import type { Item, ConstructionProject } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';

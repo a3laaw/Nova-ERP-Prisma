@@ -10,17 +10,17 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { Button } from '../ui/button';
-import { Input } from '../ui/input';
-import { Label } from '../ui/label';
-import { useFirebase } from '@/firebase';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { useFirebase } from '@/firebase/index';
 import { useToast } from '@/hooks/use-toast';
 import { doc, addDoc, updateDoc, collection } from 'firebase/firestore';
 import { Loader2, Save, Table as TableIcon, Sparkles, Truck, Tag, CreditCard, Camera } from 'lucide-react';
 import type { Vendor, RequestForQuotation, SupplierQuotation } from '@/lib/types';
-import { DateInput } from '../ui/date-input';
+import { DateInput } from '@/components/ui/date-input';
 import { toFirestoreDate } from '@/services/date-converter';
-import { ScrollArea } from '../ui/scroll-area';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Table,
   TableBody,
@@ -31,7 +31,7 @@ import {
 } from '@/components/ui/table';
 import { cleanFirestoreData } from '@/lib/utils';
 import { analyzeSupplierQuote } from '@/ai/flows/analyze-supplier-quote';
-import { Separator } from '../ui/separator';
+import { Separator } from '@/components/ui/separator';
 
 interface SupplierQuotationFormProps {
   isOpen: boolean;

@@ -1,22 +1,22 @@
 'use client';
 import { useState, useEffect, useMemo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
-import { Button } from '../ui/button';
-import { Input } from '../ui/input';
-import { Label } from '../ui/label';
-import { Textarea } from '../ui/textarea';
-import { useFirebase, useSubscription } from '@/firebase';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { useFirebase, useSubscription } from '@/firebase/index';
 import { useToast } from '@/hooks/use-toast';
 import { collection, addDoc, doc, updateDoc, serverTimestamp, query, getDocs, orderBy } from 'firebase/firestore';
 import { Loader2, Save, HardHat, Building2, Phone, Mail, MapPin, Landmark, ShieldCheck, Ban } from 'lucide-react';
 import type { Subcontractor, SubcontractorType, SubcontractorSpecialization } from '@/lib/types';
 import { cleanFirestoreData } from '@/lib/utils';
-import { Switch } from '../ui/switch';
-import { InlineSearchList } from '../ui/inline-search-list';
+import { Switch } from '@/components/ui/switch';
+import { InlineSearchList } from '@/components/ui/inline-search-list';
 import { useAppTheme } from '@/context/theme-context';
 import { cn } from '@/lib/utils';
-import { ScrollArea } from '../ui/scroll-area';
-import { Separator } from '../ui/separator';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Separator } from '@/components/ui/separator';
 
 interface SubcontractorFormProps {
     isOpen: boolean;

@@ -10,14 +10,14 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useFirebase, useSubscription } from '@/firebase';
+import { useFirebase, useSubscription } from '@/firebase/index';
 import { doc, deleteDoc, orderBy } from 'firebase/firestore';
 import type { Quotation } from '@/lib/types';
 import { format } from 'date-fns';
 import { formatCurrency, cn, getTenantPath } from '@/lib/utils';
 import { FileText, Eye, Pencil, Trash2, User, MoreHorizontal, Loader2 } from 'lucide-react';
-import { Badge } from '../ui/badge';
-import { Button } from '../ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { 
     DropdownMenu, 
     DropdownMenuContent, 
@@ -25,7 +25,7 @@ import {
     DropdownMenuLabel, 
     DropdownMenuSeparator, 
     DropdownMenuTrigger 
-} from '../ui/dropdown-menu';
+} from '@/components/ui/dropdown-menu';
 import { 
     AlertDialog, 
     AlertDialogAction, 

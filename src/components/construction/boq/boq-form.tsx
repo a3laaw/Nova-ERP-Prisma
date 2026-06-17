@@ -4,7 +4,7 @@
 import * as React from 'react';
 import { useFieldArray, Controller, useWatch } from 'react-hook-form';
 import * as z from 'zod';
-import { useFirebase, useSubscription } from '@/firebase';
+import { useFirebase, useSubscription } from '@/firebase/index';
 import { orderBy } from 'firebase/firestore';
 import type { BoqReferenceItem } from '@/lib/types';
 import { Button } from '@/components/ui/button';

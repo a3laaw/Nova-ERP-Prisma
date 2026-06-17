@@ -9,11 +9,11 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useFirebase } from '@/firebase';
+import { useFirebase } from '@/firebase/index';
 import { collectionGroup, query, limit, onSnapshot } from 'firebase/firestore'; 
 import { formatDistanceToNow } from 'date-fns';
 import { ar } from 'date-fns/locale';
-import { Skeleton } from '../ui/skeleton';
+import { Skeleton } from '@/components/ui/skeleton';
 import { History } from 'lucide-react';
 import { toFirestoreDate } from '@/services/date-converter';
 

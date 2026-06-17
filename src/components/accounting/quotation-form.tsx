@@ -14,7 +14,7 @@ import {
     Sparkles,
     Target
 } from 'lucide-react';
-import { useFirebase } from '@/firebase';
+import { useFirebase } from '@/firebase/index';
 import type { Client, Quotation, ContractTemplate, SubService, TransactionType } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { formatCurrency, cleanFirestoreData, cn, getTenantPath } from '@/lib/utils';

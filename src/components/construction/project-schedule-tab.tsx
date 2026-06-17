@@ -2,7 +2,7 @@
 'use client';
 
 import * as React from 'react';
-import { useFirebase, useSubscription } from '@/firebase';
+import { useFirebase, useSubscription } from '@/firebase/index';
 import { collection, query, orderBy } from 'firebase/firestore';
 import type { ConstructionProject, BoqItem } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';

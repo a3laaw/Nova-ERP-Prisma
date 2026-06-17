@@ -14,7 +14,7 @@ import {
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import type { AuthenticatedUser } from '@/context/auth-context';
-import { Skeleton } from '../ui/skeleton';
+import { Skeleton } from '@/components/ui/skeleton';
 
 
 interface UserNavProps {

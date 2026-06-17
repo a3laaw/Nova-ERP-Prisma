@@ -10,6 +10,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Loader2, LogIn, LogOut, Users, Building2, DollarSign, Briefcase, CalendarDays, FileText, Settings as SettingsIcon, HardHat, ShoppingCart, BarChart3, CreditCard, UserCircle, Calculator, Plus, Search, Phone } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'
+import SystemExpertChatWidget from '@/components/ai/chat-widget'
+import { findNavigation } from '@/ai/tools/find-navigation'
 
 // Lazy load v6 components
 const RegisteredClientsList = lazy(() => import('@/components/clients/registered-clients-list').then(m => ({ default: m.RegisteredClientsList })))
@@ -141,24 +143,10 @@ export default function Home() {
             <Suspense fallback={<LoadingFallback />}><RegisteredClientsList /></Suspense>
           </div>
         )}
-        {activeModule === 'hr' && (
-          <div className="space-y-4">
-            <h1 className="text-2xl font-black text-stone-800">الموارد البشرية</h1>
-            <Suspense fallback={<LoadingFallback />}><EmployeesTable /></Suspense>
-          </div>
-        )}
-        {activeModule === 'accounting' && (
-          <div className="space-y-4">
-            <h1 className="text-2xl font-black text-stone-800">المحاسبة — القيود اليومية</h1>
-            <Suspense fallback={<LoadingFallback />}><JournalEntriesList /></Suspense>
-          </div>
-        )}
-        {activeModule === 'contracts' && (
-          <div className="space-y-4">
-            <h1 className="text-2xl font-black text-stone-800">عروض الأسعار والعقود</h1>
-            <Suspense fallback={<LoadingFallback />}><QuotationsList /></Suspense>
-          </div>
-        )}
+        {activeModule === 'hr' && <HRModule />}
+        {activeModule === 'accounting' && <AccountingModule />}
+
+        {activeModule === 'contracts' && <ContractsModule />}
         {activeModule === 'projects' && (
           <div className="space-y-4">
             <h1 className="text-2xl font-black text-stone-800">المشاريع</h1>
@@ -195,9 +183,95 @@ export default function Home() {
           </div>
         )}
       </main>
+      <SystemExpertChatWidget />
     </div>
   )
 }
+
+// ===================== HR MODULE (tabs) =====================
+function HRModule() {
+  const [tab, setTab] = useState<'employees' | 'gratuity' | 'leaves'>('employees')
+  const [showLeave, setShowLeave] = useState(false)
+  const LeaveRequestForm = lazy(() => import('@/components/hr/leave-request-form').then(m => ({ default: m.LeaveRequestForm })))
+  const GratuityCalculatorView = lazy(() => import('@/components/hr/gratuity-calculator-view').then(m => ({ default: m.GratuityCalculatorView })))
+
+  return (
+    <div className="space-y-4">
+      <h1 className="text-2xl font-black text-stone-800">الموارد البشرية</h1>
+      <div className="flex gap-2">
+        <button onClick={() => setTab('employees')} className={`px-4 py-2 rounded-xl text-sm font-bold ${tab === 'employees' ? 'bg-[#F5820D] text-white' : 'bg-white border text-stone-600'}`}>الموظفون</button>
+        <button onClick={() => setTab('gratuity')} className={`px-4 py-2 rounded-xl text-sm font-bold ${tab === 'gratuity' ? 'bg-[#F5820D] text-white' : 'bg-white border text-stone-600'}`}>حاسبة المكافأة</button>
+        <button onClick={() => setTab('leaves')} className={`px-4 py-2 rounded-xl text-sm font-bold ${tab === 'leaves' ? 'bg-[#F5820D] text-white' : 'bg-white border text-stone-600'}`}>الإجازات</button>
+      </div>
+      {tab === 'employees' && <Suspense fallback={<LoadingFallback />}><EmployeesTable /></Suspense>}
+      {tab === 'gratuity' && <Suspense fallback={<LoadingFallback />}><GratuityCalculatorView /></Suspense>}
+      {tab === 'leaves' && (
+        <div className="space-y-4">
+          <Button onClick={() => setShowLeave(true)} className="gap-2 bg-[#F5820D] hover:bg-[#C45600]"><Plus className="h-4 w-4" /> طلب إجازة جديد</Button>
+          <Suspense fallback={<LoadingFallback />}><LeaveRequestsList /></Suspense>
+          <Suspense fallback={<LoadingFallback />}><LeaveRequestForm isOpen={showLeave} onClose={() => setShowLeave(false)} onSaveSuccess={() => {}} /></Suspense>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ===================== ACCOUNTING MODULE (tabs) =====================
+function AccountingModule() {
+  const [tab, setTab] = useState<'journal' | 'receipts' | 'vouchers' | 'accounts'>('journal')
+  return (
+    <div className="space-y-4">
+      <h1 className="text-2xl font-black text-stone-800">المحاسبة</h1>
+      <div className="flex gap-2 flex-wrap">
+        <button onClick={() => setTab('journal')} className={`px-4 py-2 rounded-xl text-sm font-bold ${tab === 'journal' ? 'bg-[#F5820D] text-white' : 'bg-white border text-stone-600'}`}>القيود اليومية</button>
+        <button onClick={() => setTab('receipts')} className={`px-4 py-2 rounded-xl text-sm font-bold ${tab === 'receipts' ? 'bg-[#F5820D] text-white' : 'bg-white border text-stone-600'}`}>سندات القبض</button>
+        <button onClick={() => setTab('vouchers')} className={`px-4 py-2 rounded-xl text-sm font-bold ${tab === 'vouchers' ? 'bg-[#F5820D] text-white' : 'bg-white border text-stone-600'}`}>سندات الصرف</button>
+        <button onClick={() => setTab('accounts')} className={`px-4 py-2 rounded-xl text-sm font-bold ${tab === 'accounts' ? 'bg-[#F5820D] text-white' : 'bg-white border text-stone-600'}`}>شجرة الحسابات</button>
+      </div>
+      {tab === 'journal' && <Suspense fallback={<LoadingFallback />}><JournalEntriesList /></Suspense>}
+      {tab === 'receipts' && <Suspense fallback={<LoadingFallback />}><CashReceiptsList /></Suspense>}
+      {tab === 'vouchers' && <Suspense fallback={<LoadingFallback />}><PaymentVouchersList /></Suspense>}
+      {tab === 'accounts' && <AccountsView />}
+    </div>
+  )
+}
+
+function AccountsView() {
+  const { data: accounts } = useQuery({
+    queryKey: ['accounts-list'],
+    queryFn: async () => { const r = await fetch('/api/accounts'); if (!r.ok) return []; const j = await r.json(); return j.data || [] },
+  })
+  return (
+    <Card className="rounded-2xl border border-stone-200 overflow-hidden">
+      <div className="overflow-x-auto max-h-[60vh] overflow-y-auto">
+        <table className="w-full text-sm">
+          <thead className="bg-stone-50 border-b sticky top-0"><tr><th className="text-right p-3 font-bold">الكود</th><th className="text-right p-3 font-bold">الاسم</th><th className="text-right p-3 font-bold">النوع</th><th className="text-right p-3 font-bold">المستوى</th></tr></thead>
+          <tbody className="divide-y divide-stone-100">
+            {(accounts || []).map((a: any) => (
+              <tr key={a.id} className="hover:bg-stone-50">
+                <td className="p-3 font-mono font-bold text-[#F5820D]">{a.code}</td>
+                <td className="p-3">{a.name}</td>
+                <td className="p-3"><Badge className={a.type === 'asset' ? 'bg-blue-50 text-blue-600' : a.type === 'liability' ? 'bg-red-50 text-red-600' : a.type === 'equity' ? 'bg-purple-50 text-purple-600' : a.type === 'income' ? 'bg-emerald-50 text-emerald-600' : 'bg-orange-50 text-orange-600'}>{a.type === 'asset' ? 'أصول' : a.type === 'liability' ? 'التزامات' : a.type === 'equity' ? 'حقوق ملكية' : a.type === 'income' ? 'إيرادات' : 'مصروفات'}</Badge></td>
+                <td className="p-3 text-stone-600">{a.level}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </Card>
+  )
+}
+
+// ===================== CONTRACTS MODULE =====================
+function ContractsModule() {
+  return (
+    <div className="space-y-4">
+      <h1 className="text-2xl font-black text-stone-800">عروض الأسعار والعقود</h1>
+      <Suspense fallback={<LoadingFallback />}><QuotationsList /></Suspense>
+    </div>
+  )
+}
+
 
 function DashboardView() {
   const { data: dashData, isLoading } = useQuery({

@@ -11,13 +11,13 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useFirebase, useSubscription } from '@/firebase';
+import { useFirebase, useSubscription } from '@/firebase/index';
 import { collection, query, orderBy, where } from 'firebase/firestore';
 import type { InventoryAdjustment, Warehouse } from '@/lib/types';
 import { format } from 'date-fns';
 import { formatCurrency } from '@/lib/utils';
 import { ArrowLeftRight, Search, MapPin } from 'lucide-react';
-import { Input } from '../ui/input';
+import { Input } from '@/components/ui/input';
 import { toFirestoreDate } from '@/services/date-converter';
 
 export function TransferList() {

@@ -3,16 +3,16 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
-import { Button } from '../ui/button';
-import { Input } from '../ui/input';
-import { Label } from '../ui/label';
-import { Switch } from '../ui/switch';
-import { useFirebase, useSubscription } from '@/firebase';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import { useFirebase, useSubscription } from '@/firebase/index';
 import { useToast } from '@/hooks/use-toast';
 import { collection, query, where, getDocs, doc, writeBatch, serverTimestamp, orderBy } from 'firebase/firestore';
 import { Loader2, Save, Building, Briefcase } from 'lucide-react';
 import type { Warehouse, ConstructionProject, Company } from '@/lib/types';
-import { InlineSearchList } from '../ui/inline-search-list';
+import { InlineSearchList } from '@/components/ui/inline-search-list';
 import { cleanFirestoreData } from '@/lib/utils';
 
 interface WarehouseFormProps {

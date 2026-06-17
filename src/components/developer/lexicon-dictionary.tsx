@@ -28,7 +28,7 @@ import {
     Undo2,
     Key
 } from 'lucide-react';
-import { useFirebase, useSubscription } from '@/firebase';
+import { useFirebase, useSubscription } from '@/firebase/index';
 import { collection, doc, addDoc, updateDoc, deleteDoc, writeBatch, serverTimestamp, getDocs, query, setDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/auth-context';

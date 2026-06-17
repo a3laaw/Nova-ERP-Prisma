@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import { useFirebase, useSubscription } from '@/firebase';
+import { useFirebase, useSubscription } from '@/firebase/index';
 import { collection, query, where, orderBy, doc, getDocs, serverTimestamp, runTransaction, writeBatch } from 'firebase/firestore';
 import type { Payslip, Employee, Account } from '@/lib/types';
 import {
@@ -13,12 +13,12 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Button } from '../ui/button';
+import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { formatCurrency, cleanFirestoreData, cn } from '@/lib/utils';
-import { Badge } from '../ui/badge';
+import { Badge } from '@/components/ui/badge';
 import { MoreHorizontal, Eye, CheckCircle, Loader2, Info, Printer, Download, Search, Banknote, Trash2, RefreshCw, FileDown, ChevronDown } from 'lucide-react';
 import {
   DropdownMenu,
@@ -30,7 +30,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
-import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import Link from 'next/link';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { toFirestoreDate } from '@/services/date-converter';
@@ -39,7 +39,7 @@ import { useBranding } from '@/context/branding-context';
 import { Logo } from '../layout/logo';
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
-import { Input } from '../ui/input';
+import { Input } from '@/components/ui/input';
 import { useAuth } from '@/context/auth-context';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAppTheme } from '@/context/theme-context';

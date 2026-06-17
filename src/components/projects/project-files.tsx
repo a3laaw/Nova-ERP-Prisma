@@ -1,8 +1,8 @@
 
 'use client';
 import type { Project } from '@/lib/types';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../ui/card';
-import { Button } from '../ui/button';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Upload } from 'lucide-react';
 import { useLanguage } from '@/context/language-context';
 

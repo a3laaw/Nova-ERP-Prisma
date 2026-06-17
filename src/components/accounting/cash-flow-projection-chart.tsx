@@ -6,7 +6,7 @@ import { runCashFlowProjection } from '@/ai/flows/cash-flow-projection';
 import { cn } from '@/lib/utils'; // استوردنا فقط cn وتجنبنا formatCurrency الخارجية المكسورة
 import { AlertTriangle, Loader2 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Label } from '@/components/ui/label';
 import { useAppTheme } from '@/context/theme-context';
 

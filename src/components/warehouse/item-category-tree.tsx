@@ -5,11 +5,11 @@ import type { ItemCategory } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Plus, Minus, Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Skeleton } from '../ui/skeleton';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Loader2 } from 'lucide-react';
-import { Separator } from '../ui/separator';
-import { Input } from '../ui/input';
-import { ScrollArea } from '../ui/scroll-area';
+import { Separator } from '@/components/ui/separator';
+import { Input } from '@/components/ui/input';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface CategoryNode extends ItemCategory {
   children: CategoryNode[];

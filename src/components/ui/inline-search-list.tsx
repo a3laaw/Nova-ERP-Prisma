@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { Check, ChevronsUpDown, Search, PlusCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Button } from './button';
+import { Button } from '@/components/ui/button';
 import {
   Command,
   CommandEmpty,
@@ -11,13 +11,13 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from './command';
+} from '@/components/ui/command';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from './popover';
-import { Badge } from './badge';
+} from '@/components/ui/popover';
+import { Badge } from '@/components/ui/badge';
 
 export interface SearchOption {
   value: string;

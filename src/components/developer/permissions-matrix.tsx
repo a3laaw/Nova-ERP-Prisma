@@ -32,7 +32,7 @@ import {
     Waves,
     UserCheck
 } from 'lucide-react';
-import { useFirebase, useSubscription } from '@/firebase';
+import { useFirebase, useSubscription } from '@/firebase/index';
 import { useAuth } from '@/context/auth-context';
 import { doc, setDoc, serverTimestamp, where } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';

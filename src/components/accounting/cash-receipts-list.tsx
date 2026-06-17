@@ -10,7 +10,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useFirebase } from '@/firebase';
+import { useFirebase } from '@/firebase/index';
 import { useSubscription } from '@/hooks/use-subscription';
 import { collection, query, orderBy, doc, deleteDoc, writeBatch, where, getDocs, updateDoc } from 'firebase/firestore';
 import type { CashReceipt } from '@/lib/types';
@@ -28,7 +28,7 @@ import Link from 'next/link';
 import { Input } from '@/components/ui/input';
 import { searchCashReceipts } from '@/lib/cache/fuse-search';
 import { toFirestoreDate } from '@/services/date-converter';
-import { DateInput } from '../ui/date-input';
+import { DateInput } from '@/components/ui/date-input';
 import { useAuth } from '@/context/auth-context';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';

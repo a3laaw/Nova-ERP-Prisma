@@ -3,7 +3,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { useSubscription } from '@/hooks/use-subscription';
-import { useFirebase } from '@/firebase';
+import { useFirebase } from '@/firebase/index';
 import { collection, query, orderBy, doc, deleteDoc, updateDoc, where, serverTimestamp } from 'firebase/firestore';
 import {
   Table,
@@ -13,24 +13,24 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Button } from '../ui/button';
+import { Button } from '@/components/ui/button';
 import { PlusCircle, MoreHorizontal, Trash2, Loader2, Check, X, Pencil, Search, Clock, MessageSquare, Eye } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Badge } from '../ui/badge';
+import { Badge } from '@/components/ui/badge';
 import type { PermissionRequest, Employee } from '@/lib/types';
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
-import { PermissionRequestForm } from './permission-request-form';
+import { PermissionRequestForm } from '@/components/hr/permission-request-form';
 import { toFirestoreDate } from '@/services/date-converter';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '../ui/dropdown-menu';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '../ui/alert-dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/auth-context';
-import { Textarea } from '../ui/textarea';
+import { Textarea } from '@/components/ui/textarea';
 import { useSearchParams } from 'next/navigation';
 import { cn, getTenantPath } from '@/lib/utils';
-import { Label } from '../ui/label';
-import { Input } from '../ui/input';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import { createNotification, findUserIdByEmployeeId } from '@/services/notification-service';
 
 const statusColors: Record<string, string> = {

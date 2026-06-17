@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState, useCallback } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useFirebase, useSubscription } from '@/firebase';
+import { useFirebase, useSubscription } from '@/firebase/index';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -16,8 +16,8 @@ import { Loader2, Save, Ruler, Building2, Layers, Droplets, Package, FileSignatu
 import { query, collection, orderBy, where, getDocs, doc, getDoc } from 'firebase/firestore';
 import { DialogFooter } from '@/components/ui/dialog';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Separator } from '../ui/separator';
-import { Switch } from '../ui/switch';
+import { Separator } from '@/components/ui/separator';
+import { Switch } from '@/components/ui/switch';
 
 const projectSchema = z.object({
   projectName: z.string().min(1, "اسم المشروع مطلوب."),

@@ -30,7 +30,7 @@ import {
 } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Loader2, Upload, AlertCircle, Check, Link2, Sparkles } from 'lucide-react';
-import { useFirebase, useSubscription } from '@/firebase';
+import { useFirebase, useSubscription } from '@/firebase/index';
 import type { Account, JournalEntry } from '@/lib/types';
 import * as XLSX from 'xlsx';
 import { useToast } from '@/hooks/use-toast';
