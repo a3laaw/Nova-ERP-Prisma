@@ -23,3 +23,6 @@ export function toStartOfDay(dateValue: any): Date | null {
   if (!date) return null;
   return new Date(date.getFullYear(), date.getMonth(), date.getDate());
 }
+
+// Compatibility: toFirestoreDate (alias for toDateSafe)
+export const toFirestoreDate = toDateSafe;

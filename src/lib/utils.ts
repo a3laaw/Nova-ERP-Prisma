@@ -19,3 +19,20 @@ export function numberToArabicWords(num: number | undefined | null): string {
   if (!num || num === 0) return 'صفر';
   return num.toLocaleString('ar-EG');
 }
+
+// Compatibility: getTenantPath (no-op in Prisma)
+export function getTenantPath(relativePath: string | null, _tenantId: string | undefined): string | null {
+  return relativePath
+}
+
+// Compatibility: cleanFirestoreData (no-op in Prisma)
+export function cleanFirestoreData(data: any): any {
+  const cleaned: { [key: string]: any } = {}
+  for (const key in data) {
+    const value = data[key]
+    if (value === undefined || value === null) continue
+    if (key === 'id' || key === 'createdAt') continue
+    cleaned[key] = value
+  }
+  return cleaned
+}

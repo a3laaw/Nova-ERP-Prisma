@@ -25,3 +25,4 @@ export function increment(n: number) { return n }
 export type Firestore = any
 export type DocumentSnapshot = any
 export type QueryConstraint = any
+export function deleteField() { return null }

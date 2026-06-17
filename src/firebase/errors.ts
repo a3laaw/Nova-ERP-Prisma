@@ -1,0 +1,1 @@
+export class FirestorePermissionError extends Error { constructor(opts: { path: string; operation: string }) { super(`Permission denied: ${opts.operation} on ${opts.path}`); this.name = 'FirestorePermissionError' } }
