@@ -36,3 +36,14 @@ export function cleanFirestoreData(data: any): any {
   }
   return cleaned
 }
+
+// Stubs for v6 compatibility
+export function extractMentions(text: string): string[] {
+  if (!text) return []
+  const matches = text.match(/@[\w\u0600-\u06FF]+/g)
+  return matches ? matches : []
+}
+
+export function generateStableId(prefix: string = 'id'): string {
+  return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
+}

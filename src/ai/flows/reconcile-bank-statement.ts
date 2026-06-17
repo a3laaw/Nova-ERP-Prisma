@@ -28,3 +28,6 @@ export async function reconcileBankStatement(input: ReconciliationInput): Promis
     return ReconciliationOutputSchema.parse(JSON.parse(text.replace(/```json|```/g, '').trim()));
   } catch (error: any) { throw handleAIError(error); }
 }
+
+// Alias for v6 compatibility
+export const reconcileBankStatementFlow = reconcileBankStatement;

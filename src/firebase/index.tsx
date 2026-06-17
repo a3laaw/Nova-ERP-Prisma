@@ -69,3 +69,13 @@ export function useDocument<T = any>(_firestore: any, docPath: string | null) {
 }
 
 export { useSubscription as default }
+
+// Stub for useStorage (v6 compatibility)
+export function useStorage() {
+  return {
+    upload: async () => ({ url: '' }),
+    download: async () => null,
+    delete: async () => {},
+    list: async () => [],
+  }
+}
