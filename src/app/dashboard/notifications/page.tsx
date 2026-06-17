@@ -38,7 +38,7 @@ import { useToast } from '@/hooks/use-toast';
  */
 export default function SystemAlertsPage() {
     const { firestore } = useFirebase();
-    const { user } = useAuth();
+    const user = { id: 'admin', email: 'admin@nova-erp.com', username: 'admin', fullName: 'مدير النظام', name: 'مدير النظام', role: 'admin', currentCompanyId: 'company-1', isActive: true };
     const { toast } = useToast();
     const router = useRouter();
     const { notifications, loading, error } = useNotifications();

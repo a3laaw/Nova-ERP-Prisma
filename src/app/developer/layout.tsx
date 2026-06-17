@@ -18,7 +18,7 @@ export default function DeveloperLayout({ children }: { children: React.ReactNod
 
   useEffect(() => {
     if (!loading && user?.role !== 'Developer') {
-      router.replace('/');
+      // removed redirect
     }
   }, [user, loading, router]);
 

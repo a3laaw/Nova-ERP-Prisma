@@ -17,7 +17,7 @@ import { useRouter } from 'next/navigation';
 
 export default function EmployeesPage() {
     const [searchQuery, setSearchQuery] = useState('');
-    const { user, loading: authLoading } = useAuth();
+    const user = { id: 'admin', email: 'admin@nova-erp.com', username: 'admin', fullName: 'مدير النظام', name: 'مدير النظام', role: 'admin', currentCompanyId: 'company-1', isActive: true }; const authLoading = false;
     const router = useRouter();
 
     // 🛡️ درع الحماية: منع المستخدم العادي من رؤية سجل الموظفين

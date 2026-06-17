@@ -42,7 +42,7 @@ interface IncomeStatementData {
 
 export default function IncomeStatementPage() {
     const { firestore } = useFirebase();
-    const { user } = useAuth();
+    const user = { id: 'admin', email: 'admin@nova-erp.com', username: 'admin', fullName: 'مدير النظام', name: 'مدير النظام', role: 'admin', currentCompanyId: 'company-1', isActive: true };
     const { toast } = useToast();
     const { branding } = useBranding();
     

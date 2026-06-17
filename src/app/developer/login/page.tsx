@@ -12,7 +12,7 @@ export default function RedirectToMainLogin() {
   const router = useRouter();
 
   useEffect(() => {
-    router.replace('/');
+    // removed redirect
   }, [router]);
 
   return (

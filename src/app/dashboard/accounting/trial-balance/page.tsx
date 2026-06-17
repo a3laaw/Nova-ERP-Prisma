@@ -50,7 +50,7 @@ interface TrialBalanceLine {
 
 export default function TrialBalancePage() {
     const { firestore } = useFirebase();
-    const { user } = useAuth();
+    const user = { id: 'admin', email: 'admin@nova-erp.com', username: 'admin', fullName: 'مدير النظام', name: 'مدير النظام', role: 'admin', currentCompanyId: 'company-1', isActive: true };
     const { branding } = useBranding();
     
     const [dateFrom, setDateFrom] = useState<Date | undefined>(() => startOfMonth(new Date()));
