@@ -1,9 +1,25 @@
 'use client'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { useSession } from 'next-auth/react'
+
+// Mock user — لا حاجة لـ NextAuth في هذه المرحلة
+const MOCK_USER = {
+  id: 'admin',
+  email: 'admin@nova-erp.com',
+  username: 'admin',
+  fullName: 'مدير النظام',
+  role: 'Admin',
+  companyId: 'company-1',
+  currentCompanyId: 'company-1',
+  isActive: true,
+}
 
 export function useFirebase() {
-  return { firestore: true, auth: true }
+  return {
+    firestore: true,
+    auth: true,
+    user: MOCK_USER,
+    loading: false,
+  }
 }
 
 const API_MAP: Record<string, string> = {

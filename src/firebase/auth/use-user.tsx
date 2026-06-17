@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { onAuthStateChanged, type User } from 'firebase/auth';
-import { useAuth as useFirebaseAuthService } from '../provider';
+import { useAuth as useFirebaseAuthService } from '@/context/auth-context';
 
 export function useUser() {
   const auth = useFirebaseAuthService();
@@ -11,25 +11,14 @@ export function useUser() {
   const [error, setError] = useState<Error | undefined>(undefined);
 
   useEffect(() => {
-    if (!auth) {
+    // استخدم mock user مباشرة بدون استدعاء onAuthStateChanged
+    if (auth?.user) {
+      setUser(auth.user as any);
       setLoading(false);
-      return;
+    } else {
+      setLoading(false);
     }
-
-    const unsubscribe = onAuthStateChanged(
-      auth,
-      (user) => {
-        setUser(user);
-        setLoading(false);
-      },
-      (error) => {
-        setError(error);
-        setLoading(false);
-      }
-    );
-
-    return () => unsubscribe();
-  }, [auth]);
+  }, [auth?.user]);
 
   return { user, loading, error };
 }
