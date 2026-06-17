@@ -1,7 +1,7 @@
 import { PrismaClient } from '@prisma/client'
 const p = new PrismaClient()
 async function main() {
-  const cid = 'company-1'
+  const cid = (await p.company.findFirst())?.id || ''
   // Vendors
   const vendors = [
     { name: 'شركة أسمنت الكويت', contactPerson: 'أحمد', phone: '+965-11111111', companyId: cid },
