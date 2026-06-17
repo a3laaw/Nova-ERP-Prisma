@@ -1,0 +1,229 @@
+
+'use client';
+
+import { useState, useEffect, useMemo } from 'react';
+import { useRouter, useParams } from 'next/navigation';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  CardFooter,
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Loader2, Save, X } from 'lucide-react';
+import { useFirebase, useDocument } from '@/firebase/index';
+import { doc, getDocs, collection, query, orderBy, writeBatch, serverTimestamp } from 'firebase/firestore';
+import type { Employee, ClientTransaction, Department, TransactionType } from '@/lib/types';
+import { useToast } from '@/hooks/use-toast';
+import { Skeleton } from '@/components/ui/skeleton';
+import { InlineSearchList } from '@/components/ui/inline-search-list';
+import { useAuth } from '@/context/auth-context';
+import { cleanFirestoreData } from '@/lib/utils';
+
+export default function EditTransactionPage() {
+  const router = useRouter();
+  const params = useParams();
+  const { firestore } = useFirebase();
+  const { toast } = useToast();
+  const { user: currentUser } = useAuth();
+  
+  const clientId = Array.isArray(params.id) ? params.id[0] : params.id;
+  const transactionId = Array.isArray(params.transactionId) ? params.transactionId[0] : params.transactionId;
+  
+  const [formData, setFormData] = useState({
+      transactionType: '',
+      description: '',
+      assignedEngineerId: ''
+  });
+  const [originalData, setOriginalData] = useState<Partial<ClientTransaction> | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+
+  // --- Reference Data Loading ---
+  const [transactionTypes, setTransactionTypes] = useState<TransactionType[]>([]);
+  const [engineers, setEngineers] = useState<Employee[]>([]);
+  const [loadingRefs, setLoadingRefs] = useState(true);
+
+  // --- Transaction Data Loading ---
+  const transactionRef = useMemo(() => {
+    if (!firestore || !clientId || !transactionId) return null;
+    return doc(firestore, 'clients', clientId, 'transactions', transactionId);
+  }, [firestore, clientId, transactionId]);
+
+  const { data: transaction, loading: transactionLoading, error: transactionError } = useDocument<ClientTransaction>(firestore, transactionRef ? transactionRef.path : null);
+  
+  // --- Fetch Reference Data ---
+  useEffect(() => {
+    if (!firestore) return;
+    setLoadingRefs(true);
+    const fetchRefData = async () => {
+        try {
+            const [typesSnap, engSnap] = await Promise.all([
+                getDocs(query(collection(firestore, 'transactionTypes'), orderBy('name'))),
+                getDocs(query(collection(firestore, 'employees'), orderBy('fullName')))
+            ]);
+            setTransactionTypes(typesSnap.docs.map(d => ({id: d.id, ...d.data()} as TransactionType)));
+            setEngineers(engSnap.docs.map(d => ({id: d.id, ...d.data()} as Employee)));
+        } catch (e) {
+            toast({ variant: 'destructive', title: 'خطأ', description: 'فشل في جلب البيانات المرجعية.' });
+        } finally {
+            setLoadingRefs(false);
+        }
+    };
+    fetchRefData();
+  }, [firestore, toast]);
+  
+  // --- Populate Form with existing data ---
+  useEffect(() => {
+      if (transaction) {
+          setOriginalData(transaction);
+          setFormData({
+              transactionType: transaction.transactionType || '',
+              description: transaction.description || '',
+              assignedEngineerId: transaction.assignedEngineerId || ''
+          });
+      }
+  }, [transaction]);
+
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!firestore || !currentUser || !transactionRef || !originalData) return;
+    
+    setIsSaving(true);
+    
+    const changes: string[] = [];
+    const updatePayload: any = {};
+    
+    if (formData.transactionType !== originalData.transactionType) {
+        changes.push(`تغير نوع المعاملة من "${originalData.transactionType || 'غير محدد'}" إلى "${formData.transactionType}".`);
+        updatePayload.transactionType = formData.transactionType;
+    }
+
+    if (formData.description !== (originalData.description || '')) {
+        changes.push(`تم تحديث الوصف.`);
+        updatePayload.description = formData.description;
+    }
+    const originalEngineerId = originalData.assignedEngineerId || '';
+    if (formData.assignedEngineerId !== originalEngineerId) {
+        const oldEngName = engineers.find(e => e.id === originalEngineerId)?.fullName || 'غير مسند';
+        const newEngName = engineers.find(e => e.id === formData.assignedEngineerId)?.fullName || 'غير مسند';
+        changes.push(`تغير المهندس المسؤول من "${oldEngName}" إلى "${newEngName}".`);
+        updatePayload.assignedEngineerId = formData.assignedEngineerId;
+    }
+    
+    if (changes.length === 0) {
+        toast({ title: 'لا توجد تغييرات', description: 'لم يتم تعديل أي بيانات.' });
+        setIsSaving(false);
+        return;
+    }
+    
+    try {
+        const batch = writeBatch(firestore);
+        
+        const safeUpdatePayload = cleanFirestoreData(updatePayload);
+        batch.update(transactionRef, safeUpdatePayload);
+        
+        const logRef = doc(collection(transactionRef, 'timelineEvents'));
+        batch.set(logRef, {
+            type: 'log',
+            content: `قام ${currentUser.fullName} بتحديث بيانات المعاملة:\n- ${changes.join('\n- ')}`,
+            userId: currentUser.id,
+            userName: currentUser.fullName,
+            userAvatar: currentUser.avatarUrl,
+            createdAt: serverTimestamp(),
+        });
+        
+        await batch.commit();
+        toast({ title: 'نجاح', description: 'تم تحديث المعاملة بنجاح.' });
+        router.back();
+    } catch (error) {
+        console.error("Error updating transaction:", error);
+        toast({ variant: 'destructive', title: 'خطأ في الحفظ', description: 'فشل حفظ التعديلات.' });
+    } finally {
+        setIsSaving(false);
+    }
+  };
+  
+    const transactionTypeOptions = useMemo(() => transactionTypes.map(t => ({ value: t.name, label: t.name })), [transactionTypes]);
+    const engineerOptions = useMemo(() => engineers.map(e => ({ value: e.id!, label: e.fullName })), [engineers]);
+
+
+  if (transactionLoading || loadingRefs) {
+      return <Card><CardContent className="p-8"><Skeleton className="h-64 w-full" /></CardContent></Card>;
+  }
+
+  if (transactionError) {
+      return <Card><CardHeader><CardTitle>خطأ</CardTitle></CardHeader><CardContent><p>فشل تحميل بيانات المعاملة.</p></CardContent></Card>;
+  }
+  
+  return (
+    <Card className="max-w-2xl mx-auto" dir="rtl">
+        <form onSubmit={handleSubmit}>
+            <CardHeader>
+                <div className="flex justify-between items-start">
+                    <div>
+                        <CardTitle>تعديل المعاملة</CardTitle>
+                        <CardDescription>تعديل تفاصيل المعاملة الداخلية للعميل.</CardDescription>
+                    </div>
+                     {originalData?.transactionNumber && (
+                        <div className="text-right">
+                            <Label>رقم المعاملة</Label>
+                            <div className="font-mono text-lg font-semibold h-7">
+                                {originalData.transactionNumber}
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </CardHeader>
+            <CardContent className="space-y-6">
+                <div className="grid gap-2">
+                    <Label>نوع المعاملة <span className="text-destructive">*</span></Label>
+                    <InlineSearchList 
+                        value={formData.transactionType} 
+                        onSelect={(v) => setFormData(p => ({...p, transactionType: v}))} 
+                        options={transactionTypeOptions} 
+                        placeholder={loadingRefs ? "تحميل..." : "اختر نوع المعاملة..."} 
+                        disabled={loadingRefs}
+                    />
+                </div>
+                <div className="grid gap-2">
+                    <Label>المهندس المسؤول (اختياري)</Label>
+                    <InlineSearchList 
+                        value={formData.assignedEngineerId} 
+                        onSelect={(v) => setFormData(p => ({...p, assignedEngineerId: v}))} 
+                        options={engineerOptions} 
+                        placeholder={loadingRefs ? "تحميل..." : "اختر مهندسًا..."} 
+                        disabled={loadingRefs}
+                    />
+                </div>
+                <div className="grid gap-2">
+                    <Label htmlFor="description">الوصف</Label>
+                    <Textarea 
+                        id="description" 
+                        value={formData.description}
+                        onChange={(e) => setFormData(p => ({...p, description: e.target.value}))}
+                        rows={3}
+                    />
+                </div>
+            </CardContent>
+            <CardFooter className="flex justify-end gap-2">
+                 <Button type="button" variant="outline" onClick={() => router.back()} disabled={isSaving}>
+                    <X className="ml-2 h-4 w-4"/> إلغاء
+                </Button>
+                <Button type="submit" disabled={isSaving}>
+                    {isSaving ? <Loader2 className="ml-2 h-4 w-4 animate-spin"/> : <Save className="ml-2 h-4 w-4"/>}
+                    {isSaving ? 'جاري الحفظ...' : 'حفظ التعديلات'}
+                </Button>
+            </CardFooter>
+        </form>
+    </Card>
+  );
+}
+
+    
+
+    

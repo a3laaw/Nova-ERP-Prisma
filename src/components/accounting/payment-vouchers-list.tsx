@@ -1,0 +1,264 @@
+'use client';
+
+import { useMemo, useState } from 'react';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useFirebase } from '@/firebase/index';
+import { useSubscription } from '@/hooks/use-subscription';
+import { collection, query, orderBy, doc, deleteDoc, writeBatch } from 'firebase/firestore';
+import type { PaymentVoucher } from '@/lib/types';
+import { format } from 'date-fns';
+import { formatCurrency } from '@/lib/utils';
+import { FileText, MoreHorizontal, Eye, Pencil, Trash2, Loader2, Search } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Button } from '@/components/ui/button';
+import { useRouter } from 'next/navigation';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { useToast } from '@/hooks/use-toast';
+import Link from 'next/link';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { searchPaymentVouchers } from '@/lib/cache/fuse-search';
+import { toFirestoreDate } from '@/services/date-converter';
+import { DateInput } from '@/components/ui/date-input';
+
+
+const statusColors: Record<string, string> = {
+    draft: 'bg-yellow-100 text-yellow-800',
+    paid: 'bg-green-100 text-green-800',
+    cancelled: 'bg-red-100 text-red-800',
+};
+
+const statusTranslations: Record<string, string> = {
+    draft: 'مسودة',
+    paid: 'مدفوع',
+    cancelled: 'ملغي',
+};
+
+
+export function PaymentVouchersList() {
+  const { firestore } = useFirebase();
+  const router = useRouter();
+  const { toast } = useToast();
+  
+  const [voucherToDelete, setVoucherToDelete] = useState<PaymentVoucher | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  
+  const [searchQuery, setSearchQuery] = useState('');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
+
+
+  const vouchersQueryConstraints = useMemo(() => [orderBy('paymentDate', 'desc')], []);
+  const { data: vouchers, loading, error } = useSubscription<PaymentVoucher>(firestore, 'paymentVouchers', vouchersQueryConstraints);
+
+  const filteredVouchers = useMemo(() => {
+    const dateFiltered = vouchers.filter(voucher => {
+      const voucherDate = toFirestoreDate(voucher.paymentDate);
+
+      if (!dateFrom && !dateTo) return true;
+      if (!voucherDate) return false;
+
+      const matchesDateFrom = !dateFrom || (voucherDate >= new Date(new Date(dateFrom).setHours(0, 0, 0, 0)));
+      const matchesDateTo = !dateTo || (voucherDate <= new Date(new Date(dateTo).setHours(23, 59, 59, 999)));
+      
+      return matchesDateFrom && matchesDateTo;
+    });
+
+    return searchPaymentVouchers(dateFiltered, searchQuery);
+  }, [vouchers, searchQuery, dateFrom, dateTo]);
+
+
+  const formatDate = (dateValue: any) => {
+    const date = toFirestoreDate(dateValue);
+    if (!date) return '-';
+    return format(date, 'dd/MM/yyyy');
+  };
+  
+  const handleDelete = async () => {
+    if (!voucherToDelete || !firestore) return;
+    setIsDeleting(true);
+    try {
+        const batch = writeBatch(firestore);
+        const voucherRef = doc(firestore, 'paymentVouchers', voucherToDelete.id!);
+        batch.delete(voucherRef);
+
+        if (voucherToDelete.journalEntryId) {
+            const jeRef = doc(firestore, 'journalEntries', voucherToDelete.journalEntryId);
+            batch.delete(jeRef);
+        }
+        
+        await batch.commit();
+        toast({ title: 'نجاح', description: 'تم حذف سند الصرف والقيد المرتبط به بنجاح.' });
+    } catch (error) {
+        console.error('Error deleting payment voucher:', error);
+        toast({ variant: 'destructive', title: 'خطأ', description: 'فشل حذف سند الصرف.' });
+    } finally {
+        setIsDeleting(false);
+        setVoucherToDelete(null);
+    }
+  }
+
+  if (loading) {
+    return (
+        <div className="border rounded-lg">
+            <Table>
+                <TableHeader>
+                    <TableRow>
+                        <TableHead>رقم السند</TableHead>
+                        <TableHead>اسم المستفيد</TableHead>
+                        <TableHead>التاريخ</TableHead>
+                        <TableHead>المبلغ</TableHead>
+                        <TableHead>الحالة</TableHead>
+                        <TableHead>الإجراءات</TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {Array.from({ length: 5 }).map((_, i) => (
+                        <TableRow key={i}>
+                            <TableCell colSpan={6}><Skeleton className="h-6 w-full" /></TableCell>
+                        </TableRow>
+                    ))}
+                </TableBody>
+            </Table>
+        </div>
+    );
+  }
+  
+  if (error) {
+      return <div className="text-center py-10 text-destructive">فشل تحميل قائمة السندات.</div>;
+  }
+
+  return (
+    <>
+        <div className="bg-muted/50 p-4 rounded-lg mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                <div className="grid gap-2 md:col-span-1">
+                    <Label htmlFor="search">بحث ذكي</Label>
+                    <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                            id="search"
+                            placeholder="رقم السند, اسم المستفيد, المبلغ..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="pl-10"
+                        />
+                    </div>
+                </div>
+                <div className="grid gap-2">
+                    <Label htmlFor="dateFrom">من تاريخ</Label>
+                    <DateInput 
+                        value={dateFrom ? new Date(dateFrom) : undefined}
+                        onChange={(d) => setDateFrom(d ? d.toISOString().split('T')[0] : '')}
+                    />
+                </div>
+                <div className="grid gap-2">
+                    <Label htmlFor="dateTo">إلى تاريخ</Label>
+                    <DateInput 
+                        value={dateTo ? new Date(dateTo) : undefined}
+                        onChange={(d) => setDateTo(d ? d.toISOString().split('T')[0] : '')}
+                    />
+                </div>
+            </div>
+        </div>
+
+        <div className="border rounded-lg">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>رقم السند</TableHead>
+                <TableHead>اسم المستفيد</TableHead>
+                <TableHead>التاريخ</TableHead>
+                <TableHead>المبلغ</TableHead>
+                <TableHead>الحالة</TableHead>
+                <TableHead>الإجراءات</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {vouchers.length === 0 ? (
+                 <TableRow>
+                    <TableCell colSpan={6}>
+                        <div className="p-8 text-center border-2 border-dashed rounded-lg">
+                            <FileText className="mx-auto h-12 w-12 text-muted-foreground" />
+                            <h3 className="mt-4 text-lg font-medium">لا توجد سندات صرف</h3>
+                            <p className="mt-2 text-sm text-muted-foreground">
+                                ابدأ بإنشاء سند صرف جديد ليظهر هنا.
+                            </p>
+                        </div>
+                    </TableCell>
+                </TableRow>
+              ) : filteredVouchers.length === 0 ? (
+                <TableRow>
+                    <TableCell colSpan={6} className="h-24 text-center">
+                        لا توجد نتائج تطابق بحثك.
+                    </TableCell>
+                </TableRow>
+              ) : (
+                    filteredVouchers.map((voucher) => (
+                        <TableRow key={voucher.id}>
+                            <TableCell className="font-mono">
+                                <Link href={`/dashboard/accounting/payment-vouchers/${voucher.id}`} className="hover:underline text-primary">
+                                {voucher.voucherNumber}
+                                </Link>
+                            </TableCell>
+                            <TableCell>{voucher.payeeName}</TableCell>
+                            <TableCell>{formatDate(voucher.paymentDate)}</TableCell>
+                            <TableCell className="font-mono">{formatCurrency(voucher.amount)}</TableCell>
+                            <TableCell>
+                                <Badge variant="outline" className={statusColors[voucher.status]}>{statusTranslations[voucher.status]}</Badge>
+                            </TableCell>
+                            <TableCell>
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal className="h-4 w-4" /></Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end" dir="rtl">
+                                        <DropdownMenuLabel>الإجراءات</DropdownMenuLabel>
+                                        <DropdownMenuItem onClick={() => router.push(`/dashboard/accounting/payment-vouchers/${voucher.id}`)}>
+                                            <Eye className="ml-2 h-4 w-4" /> عرض / طباعة
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => router.push(`/dashboard/accounting/payment-vouchers/${voucher.id}/edit`)}>
+                                            <Pencil className="ml-2 h-4 w-4" /> تعديل
+                                        </DropdownMenuItem>
+                                        <DropdownMenuSeparator />
+                                        <DropdownMenuItem onClick={() => setVoucherToDelete(voucher)} className="text-destructive focus:text-destructive">
+                                            <Trash2 className="ml-2 h-4 w-4" /> حذف
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </TableCell>
+                        </TableRow>
+                    ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
+        
+         <AlertDialog open={!!voucherToDelete} onOpenChange={() => setVoucherToDelete(null)}>
+            <AlertDialogContent dir="rtl">
+                <AlertDialogHeader>
+                    <AlertDialogTitle>هل أنت متأكد من الحذف؟</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        سيتم حذف السند رقم "{voucherToDelete?.voucherNumber}" والقيد المحاسبي المرتبط به بشكل دائم.
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel disabled={isDeleting}>إلغاء</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleDelete} disabled={isDeleting} className="bg-destructive hover:bg-destructive/90">
+                        {isDeleting ?  'جاري الحذف...' : 'نعم، قم بالحذف'}
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
+    </>
+  );
+}
