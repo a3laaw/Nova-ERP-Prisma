@@ -68,7 +68,7 @@ export default function Home() {
               <Label className="font-bold text-gray-700">كلمة المرور</Label>
               <Input type="password" value={password} onChange={e => setPassword(e.target.value)} className="h-12 rounded-xl border-2" placeholder="••••••••" />
             </div>
-            <Button onClick={() => { setLoading(true); signIn('credentials', { email, password, redirect: false }).finally(() => setLoading(false)) }} disabled={loading} className="w-full h-12 rounded-xl font-black text-lg gap-2 bg-[#F5820D] hover:bg-[#C45600]">
+            <Button onClick={() => { setLoading(true); signIn('credentials', { email, password, redirect: true, callbackUrl: '/' }) }} disabled={loading} className="w-full h-12 rounded-xl font-black text-lg gap-2 bg-[#F5820D] hover:bg-[#C45600]">
               {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <LogIn className="h-5 w-5" />} دخول
             </Button>
             <p className="text-center text-xs text-muted-foreground">تجريبي: admin@nova-erp.com / admin123</p>

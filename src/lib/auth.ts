@@ -7,32 +7,56 @@ export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
       name: 'Credentials',
-      credentials: { email: { label: 'Email', type: 'email' }, password: { label: 'Password', type: 'password' } },
+      credentials: {
+        email: { label: 'Email', type: 'email' },
+        password: { label: 'Password', type: 'password' },
+      },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null
-        const user = await db.user.findUnique({ where: { email: credentials.email }, include: { company: true } })
+
+        const user = await db.user.findUnique({
+          where: { email: credentials.email.toLowerCase().trim() },
+        })
+
         if (!user || !user.isActive) return null
+
         const isValid = await bcrypt.compare(credentials.password, user.password)
         if (!isValid) return null
-        await db.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } })
-        return { id: user.id, email: user.email, name: user.fullName || user.username, role: user.role, companyId: user.companyId }
+
+        await db.user.update({
+          where: { id: user.id },
+          data: { lastLoginAt: new Date() },
+        })
+
+        return {
+          id: user.id,
+          email: user.email,
+          name: user.fullName || user.username,
+        } as any
       },
     }),
   ],
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        ;(token as any).userId = (user as any).id
-        ;(token as any).userRole = (user as any).role
-        ;(token as any).userCompanyId = (user as any).companyId
+        // إضافة الدور و companyId للـ token
+        const dbUser = await db.user.findUnique({
+          where: { id: (user as any).id },
+          select: { role: true, companyId: true, fullName: true, username: true },
+        })
+        if (dbUser) {
+          token.name = dbUser.fullName || dbUser.username
+          ;(token as any).role = dbUser.role
+          ;(token as any).companyId = dbUser.companyId
+        }
       }
       return token
     },
     async session({ session, token }) {
       if (session.user) {
-        ;(session.user as any).id = (token as any).userId
-        ;(session.user as any).role = (token as any).userRole
-        ;(session.user as any).companyId = (token as any).userCompanyId
+        ;(session.user as any).id = token.sub
+        ;(session.user as any).role = (token as any).role
+        ;(session.user as any).companyId = (token as any).companyId
       }
       return session
     },
