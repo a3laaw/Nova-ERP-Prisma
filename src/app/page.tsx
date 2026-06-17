@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge'
 import { Loader2, LogIn, LogOut, Users, Building2, DollarSign, Briefcase, CalendarDays, FileText, Settings as SettingsIcon, HardHat, ShoppingCart, BarChart3, CreditCard, UserCircle, Calculator, Plus, Search, Bell, Moon, Sun } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'
 import { findNavigation } from '@/ai/tools/find-navigation'
-import { OfflineIndicator } from '@/context/sync-context'
+import { OfflineIndicator, SyncStatusProvider } from '@/context/sync-context'
 import SystemExpertChatWidget from '@/components/ai/chat-widget'
 import { useTheme } from 'next-themes'
 
@@ -186,7 +186,7 @@ export default function Home() {
         </div>
       </main>
       <SystemExpertChatWidget />
-      <OfflineIndicator />
+      <SyncStatusProvider><OfflineIndicator /></SyncStatusProvider>
     </div>
   )
 }
