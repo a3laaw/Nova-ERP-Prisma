@@ -5,6 +5,7 @@ import { SidebarProvider, Sidebar, SidebarInset } from '@/components/ui/sidebar'
 import { MainNav } from '@/components/layout/main-nav';
 import { Header } from '@/components/layout/header';
 import { useAuth } from '@/context/auth-context';
+import { useSession } from 'next-auth/react';
 import { AlertCircle, RefreshCcw, LogOut } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useLanguage } from '@/context/language-context';
@@ -56,6 +57,9 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const { user, loading, logout } = useAuth();
+  // Fallback: إذا لا يوجد user من useAuth، استخدم session مباشرة
+  const { data: session } = useSession();
+  const effectiveUser = user || (session?.user ? { id: (session.user as any).id, email: session.user.email, username: session.user.name, fullName: session.user.name, role: (session.user as any).role || 'admin', currentCompanyId: (session.user as any).companyId, isActive: true } : null);
   const router = useRouter();
   const { language } = useLanguage();
   
@@ -72,7 +76,8 @@ export default function DashboardLayout({
 
   const handleSafeExit = () => {
     logout();
-    router.replace('/');
+    // لا redirect — فقط اعرض loading
+        return null;
   };
 
   if (loading || !mounted) {
@@ -112,7 +117,7 @@ export default function DashboardLayout({
   }
 
   // 🛡️ تصحيح منطق المطور: السماح بدخول الداشبورد للمطور حتى لو لم يكن مرتبطاً بشركة
-  const hasAccess = user && (user.currentCompanyId || user.role === 'Developer');
+  const hasAccess = effectiveUser && ((effectiveUser as any).currentCompanyId || (effectiveUser as any).role === 'Developer' || (effectiveUser as any).role === 'admin');
 
   if (!hasAccess) {
     return (
@@ -131,10 +136,10 @@ export default function DashboardLayout({
     <div className="relative min-h-screen">
       <SidebarProvider>
           <Sidebar side={language === 'ar' ? 'right' : 'left'} className="no-print sidebar-glass border-none">
-            <MainNav currentUser={user} onLogout={handleSafeExit} />
+            <MainNav currentUser={effectiveUser} onLogout={handleSafeExit} />
           </Sidebar>
           <SidebarInset className="flex flex-col h-screen min-w-0 w-full bg-transparent">
-            <Header currentUser={user} onLogout={handleSafeExit} className="no-print bg-transparent border-none" />
+            <Header currentUser={effectiveUser} onLogout={handleSafeExit} className="no-print bg-transparent border-none" />
             <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 min-w-0">
               {children}
             </main>
