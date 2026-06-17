@@ -3,7 +3,7 @@ import { db } from '@/lib/db';
 
 export async function GET(request: NextRequest) {
   try {
-    const items = await db.governorates.findMany({
+    const items = await db.governorate.findMany({
       where: { isActive: true },
       orderBy: { order: 'asc' },
     });
