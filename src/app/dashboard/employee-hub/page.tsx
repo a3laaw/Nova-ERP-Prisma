@@ -25,7 +25,7 @@ import { cn } from '@/lib/utils';
  * تم تحويل زر الشكر ليكون لؤلؤياً عائماً (Pearl Floating) بوضوح نصي مطلق وحركة هادئة.
  */
 export default function EmployeeHubPage() {
-    const user = { id: 'admin', email: 'admin@nova-erp.com', username: 'admin', fullName: 'مدير النظام', name: 'مدير النظام', role: 'admin', currentCompanyId: 'company-1', isActive: true };
+    const user = { id: 'admin', email: 'admin@nova-erp.com', username: 'admin', fullName: 'مدير النظام', name: 'مدير النظام', role: 'Admin', currentCompanyId: 'company-1', isActive: true };
     const [isKudosOpen, setIsKudosOpen] = useState(false);
 
     return (

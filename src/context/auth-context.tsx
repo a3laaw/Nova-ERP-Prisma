@@ -8,13 +8,15 @@ export interface AuthenticatedUser {
 }
 
 // Mock user ثابت — يعمل بدون NextAuth تماماً
+// ملاحظة: الأدوار يجب أن تكون Capital-case (Admin, HR, Developer, Accountant, Secretary)
+// لأن الكود يفحصها بـ .includes('Admin') مثلاً
 const MOCK_USER: AuthenticatedUser = {
   id: 'admin',
   email: 'admin@nova-erp.com',
   username: 'admin',
   fullName: 'مدير النظام',
   name: 'مدير النظام',
-  role: 'admin',
+  role: 'Admin',
   jobTitle: 'مدير النظام',
   companyId: 'company-1',
   currentCompanyId: 'company-1',
@@ -57,7 +59,7 @@ export function useAuth() {
     return {
       user: MOCK_USER,
       company: { id: 'company-1', name: 'Nova Engineering' },
-      currentRole: 'admin',
+      currentRole: 'Admin',
       loading: false,
       error: null,
       login: async () => {},

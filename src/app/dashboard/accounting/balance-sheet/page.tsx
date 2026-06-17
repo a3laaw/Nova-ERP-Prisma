@@ -59,7 +59,7 @@ const AccountRow = ({ name, balance, className }: { name: string, balance: numbe
 
 export default function BalanceSheetPage() {
     const { firestore } = useFirebase();
-    const user = { id: 'admin', email: 'admin@nova-erp.com', username: 'admin', fullName: 'مدير النظام', name: 'مدير النظام', role: 'admin', currentCompanyId: 'company-1', isActive: true };
+    const user = { id: 'admin', email: 'admin@nova-erp.com', username: 'admin', fullName: 'مدير النظام', name: 'مدير النظام', role: 'Admin', currentCompanyId: 'company-1', isActive: true };
     const { branding, loading: brandingLoading } = useBranding();
     
     const [isGenerating, setIsGenerating] = useState(false);

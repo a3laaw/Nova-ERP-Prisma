@@ -53,7 +53,7 @@ import { createNotification } from '@/services/notification-service';
  */
 function ProductivityContent() {
     const { firestore } = useFirebase();
-    const user = { id: 'admin', email: 'admin@nova-erp.com', username: 'admin', fullName: 'مدير النظام', name: 'مدير النظام', role: 'admin', currentCompanyId: 'company-1', isActive: true }; const authLoading = false;
+    const user = { id: 'admin', email: 'admin@nova-erp.com', username: 'admin', fullName: 'مدير النظام', name: 'مدير النظام', role: 'Admin', currentCompanyId: 'company-1', isActive: true }; const authLoading = false;
     const searchParams = useSearchParams();
     
     const [activeTab, setActiveTab] = useState('tasks');
@@ -203,7 +203,7 @@ function ProductivityContent() {
 
 function TaskCard({ task, onEdit, onComplete, onAddComment }: { task: UserProductivityItem, onEdit: (task: UserProductivityItem) => void, onComplete: (task: UserProductivityItem) => void, onAddComment: (task: UserProductivityItem) => void }) {
     const { firestore } = useFirebase();
-    const user = { id: 'admin', email: 'admin@nova-erp.com', username: 'admin', fullName: 'مدير النظام', name: 'مدير النظام', role: 'admin', currentCompanyId: 'company-1', isActive: true };
+    const user = { id: 'admin', email: 'admin@nova-erp.com', username: 'admin', fullName: 'مدير النظام', name: 'مدير النظام', role: 'Admin', currentCompanyId: 'company-1', isActive: true };
     const { toast } = useToast();
     const [isUpdating, setIsUpdating] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
@@ -343,7 +343,7 @@ function TaskCard({ task, onEdit, onComplete, onAddComment }: { task: UserProduc
 
 function TaskProgressNoteDialog({ isOpen, onClose, task }: { isOpen: boolean, onClose: () => void, task: UserProductivityItem }) {
     const { firestore } = useFirebase();
-    const user = { id: 'admin', email: 'admin@nova-erp.com', username: 'admin', fullName: 'مدير النظام', name: 'مدير النظام', role: 'admin', currentCompanyId: 'company-1', isActive: true };
+    const user = { id: 'admin', email: 'admin@nova-erp.com', username: 'admin', fullName: 'مدير النظام', name: 'مدير النظام', role: 'Admin', currentCompanyId: 'company-1', isActive: true };
     const { toast } = useToast();
     
     const [note, setNote] = useState('');
@@ -477,7 +477,7 @@ function TaskProgressNoteDialog({ isOpen, onClose, task }: { isOpen: boolean, on
 
 function CompleteTaskDialog({ isOpen, onClose, task }: { isOpen: boolean, onClose: () => void, task: UserProductivityItem }) {
     const { firestore } = useFirebase();
-    const user = { id: 'admin', email: 'admin@nova-erp.com', username: 'admin', fullName: 'مدير النظام', name: 'مدير النظام', role: 'admin', currentCompanyId: 'company-1', isActive: true };
+    const user = { id: 'admin', email: 'admin@nova-erp.com', username: 'admin', fullName: 'مدير النظام', name: 'مدير النظام', role: 'Admin', currentCompanyId: 'company-1', isActive: true };
     const { toast } = useToast();
     
     const [completionNote, setCompletionNote] = useState('');
@@ -607,7 +607,7 @@ function CompleteTaskDialog({ isOpen, onClose, task }: { isOpen: boolean, onClos
 
 function EditTaskDialog({ isOpen, onClose, task }: { isOpen: boolean, onClose: () => void, task: UserProductivityItem }) {
     const { firestore } = useFirebase();
-    const user = { id: 'admin', email: 'admin@nova-erp.com', username: 'admin', fullName: 'مدير النظام', name: 'مدير النظام', role: 'admin', currentCompanyId: 'company-1', isActive: true };
+    const user = { id: 'admin', email: 'admin@nova-erp.com', username: 'admin', fullName: 'مدير النظام', name: 'مدير النظام', role: 'Admin', currentCompanyId: 'company-1', isActive: true };
     const { toast } = useToast();
     
     const [title, setTitle] = useState(task.title);
@@ -702,7 +702,7 @@ function EditTaskDialog({ isOpen, onClose, task }: { isOpen: boolean, onClose: (
 
 function BookmarkCard({ bookmark }: { bookmark: UserProductivityItem }) {
     const { firestore } = useFirebase();
-    const user = { id: 'admin', email: 'admin@nova-erp.com', username: 'admin', fullName: 'مدير النظام', name: 'مدير النظام', role: 'admin', currentCompanyId: 'company-1', isActive: true };
+    const user = { id: 'admin', email: 'admin@nova-erp.com', username: 'admin', fullName: 'مدير النظام', name: 'مدير النظام', role: 'Admin', currentCompanyId: 'company-1', isActive: true };
     const { toast } = useToast();
     
     const tenantId = user?.currentCompanyId;

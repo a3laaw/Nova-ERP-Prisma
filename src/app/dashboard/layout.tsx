@@ -14,7 +14,7 @@ const MOCK_USER = {
   username: 'admin',
   fullName: 'مدير النظام',
   name: 'مدير النظام',
-  role: 'admin',
+  role: 'Admin',
   currentCompanyId: 'company-1',
   companyName: 'Nova Engineering',
   isActive: true,
