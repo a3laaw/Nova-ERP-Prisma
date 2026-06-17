@@ -64,6 +64,8 @@ export function writeBatch(_db: any) { return { set: () => {}, update: () => {},
 export function onSnapshot(_q: any, cb: any, _errCb?: any) { cb({ docs: [], empty: true, forEach: () => {} }); return () => {} }
 export function collectionGroup(_db: any, name: string) { return { _type: 'collectionGroup', path: name } }
 export function increment(n: number) { return n }
+export function arrayUnion(...items: any[]) { return { _op: 'arrayUnion', items } }
+export function arrayRemove(...items: any[]) { return { _op: 'arrayRemove', items } }
 export function deleteField() { return null }
 export type Firestore = any
 export type DocumentSnapshot = any
