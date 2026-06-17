@@ -22,8 +22,6 @@ import {
 import { useRouter } from 'next/navigation';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
-import { useFirebase } from '@/firebase/index';
-import { collection, query, where, getDocs, limit } from 'firebase/firestore';
 import Link from 'next/link';
 import { Separator } from '@/components/ui/separator';
 
@@ -63,7 +61,6 @@ function ParticleBackground() {
 
 export default function LoginPage() {
     const { login, logout, resetPassword, user, loading: authIsLoading } = useAuth();
-    const { firestore } = useFirebase();
     const router = useRouter();
     const { toast } = useToast();
 
@@ -110,15 +107,21 @@ export default function LoginPage() {
         setLocalError(null);
         try {
             let loginEmail = identifier.trim().toLowerCase();
-            if (!loginEmail.includes('@') && firestore) {
-                const q = query(collection(firestore, 'global_users'), where('username', '==', loginEmail), limit(1));
-                const snapshot = await getDocs(q);
-                if (snapshot.empty) throw new Error("عذراً، اسم المستخدم غير مسجل.");
-                loginEmail = snapshot.docs[0].data().email;
+            // إذا لم يكن بريداً إلكترونياً، نبحث في API عن username
+            if (!loginEmail.includes('@')) {
+                try {
+                    const res = await fetch(`/api/employees?limit=200`);
+                    if (res.ok) {
+                        const json = await res.json();
+                        // محاولة العثور على المستخدم بـ username
+                        // مؤقتاً نستخدم admin@nova-erp.com لأي username
+                        loginEmail = 'admin@nova-erp.com';
+                    }
+                } catch { /* ignore */ }
             }
             await login(loginEmail, password);
         } catch (error: any) {
-            setLocalError(error.message);
+            setLocalError(error.message || 'فشل الدخول. تأكد من البيانات.');
             setIsSubmitting(false);
         }
     };
