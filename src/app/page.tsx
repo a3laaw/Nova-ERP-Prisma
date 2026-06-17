@@ -79,7 +79,17 @@ export default function Home() {
           <CardContent className="p-8 space-y-4">
             <div className="space-y-2"><Label className="font-bold text-gray-700">البريد الإلكتروني</Label><Input value={email} onChange={e => setEmail(e.target.value)} className="h-12 rounded-xl border-2" /></div>
             <div className="space-y-2"><Label className="font-bold text-gray-700">كلمة المرور</Label><Input type="password" value={password} onChange={e => setPassword(e.target.value)} className="h-12 rounded-xl border-2" /></div>
-            <Button onClick={() => { setLoading(true); signIn('credentials', { email, password, redirect: true, callbackUrl: '/' }) }} disabled={loading} className="w-full h-12 rounded-xl font-black text-lg gap-2 bg-[#F5820D] hover:bg-[#C45600]">{loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <LogIn className="h-5 w-5" />} دخول</Button>
+            <Button onClick={async () => {
+              setLoading(true)
+              const result = await signIn('credentials', { email, password, redirect: false })
+              if (result?.error) {
+                setLoading(false)
+                alert('فشل الدخول — تأكد من البريد وكلمة المرور')
+              } else {
+                // نجح الدخول — أعد تحميل الصفحة لتحديث الجلسة
+                window.location.reload()
+              }
+            }} disabled={loading} className="w-full h-12 rounded-xl font-black text-lg gap-2 bg-[#F5820D] hover:bg-[#C45600]">{loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <LogIn className="h-5 w-5" />} دخول</Button>
             <p className="text-center text-xs text-muted-foreground">تجريبي: admin@nova-erp.com / admin123</p>
           </CardContent>
         </Card>
