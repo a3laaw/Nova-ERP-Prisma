@@ -1,9 +1,7 @@
 'use client'
 import React, { useState, useEffect } from 'react'
-import { useSession } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { LogOut, Building2, Loader2, Bell, Search, Settings } from 'lucide-react'
+import { Building2, Bell, Search, Settings } from 'lucide-react'
 import { OfflineIndicator } from '@/context/sync-context'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -60,7 +58,6 @@ const navSections: { titleAr: string; items: NavItem[] }[] = [
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(true)
-  const router = useRouter()
   const user = MOCK_USER
 
   return (

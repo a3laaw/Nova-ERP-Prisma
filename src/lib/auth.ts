@@ -61,7 +61,7 @@ export const authOptions: NextAuthOptions = {
       return session
     },
   },
-  pages: { signIn: '/' },
+  // لا حاجة لصفحة signIn — نستخدم mock user
   session: { strategy: 'jwt' },
   secret: process.env.NEXTAUTH_SECRET,
 }
