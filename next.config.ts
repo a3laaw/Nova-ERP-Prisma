@@ -13,6 +13,16 @@ const nextConfig: NextConfig = {
     'localhost',
     '127.0.0.1',
   ],
+  // Rewrite '/' to '/dashboard' internally — NO redirect, NO navigation.
+  // This is the only way to defeat cached 307 loops on preview URLs.
+  async rewrites() {
+    return [
+      {
+        source: '/',
+        destination: '/dashboard',
+      },
+    ]
+  },
 };
 
 export default nextConfig;
