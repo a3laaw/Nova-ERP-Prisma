@@ -130,20 +130,15 @@ echo "[BUN] Setting up database..."
 bun run db:push
 log_step_end "bun run db:push"
 
-log_step_start "Building Next.js (production)"
-echo "[BUN] Running production build..."
-bun run build
-log_step_end "Building Next.js (production)"
-
-log_step_start "Starting Next.js production server"
-echo "[BUN] Starting production server..."
-PORT=3000 HOSTNAME=0.0.0.0 NODE_ENV=production bun .next/standalone/server.js &
+log_step_start "Starting Next.js dev server"
+echo "[BUN] Starting development server..."
+bun run dev &
 DEV_PID=$!
-log_step_end "Starting Next.js production server"
+log_step_end "Starting Next.js dev server"
 
-log_step_start "Waiting for Next.js server"
-wait_for_service "localhost" "3000" "Next.js server"
-log_step_end "Waiting for Next.js server"
+log_step_start "Waiting for Next.js dev server"
+wait_for_service "localhost" "3000" "Next.js dev server"
+log_step_end "Waiting for Next.js dev server"
 
 log_step_start "Health check"
 echo "[BUN] Performing health check..."
