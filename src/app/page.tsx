@@ -1,10 +1,17 @@
 'use client'
+
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { Building2 } from 'lucide-react'
 
 export default function Home() {
   const router = useRouter()
-  useEffect(() => { router.replace('/dashboard') }, [router])
+
+  useEffect(() => {
+    // Direct redirect to dashboard — no login wall
+    router.replace('/dashboard')
+  }, [router])
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-stone-50">
       <div className="text-center">
@@ -16,5 +23,3 @@ export default function Home() {
     </div>
   )
 }
-
-import { Building2 } from 'lucide-react'
