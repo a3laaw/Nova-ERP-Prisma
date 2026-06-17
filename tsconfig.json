@@ -26,6 +26,15 @@
     "paths": {
       "@/*": [
         "./src/*"
+      ],
+      "firebase/firestore": [
+        "./src/firebase/firestore/index.ts"
+      ],
+      "firebase/auth": [
+        "./src/firebase/auth/index.ts"
+      ],
+      "firebase/storage": [
+        "./src/firebase/storage/index.ts"
       ]
     }
   },
