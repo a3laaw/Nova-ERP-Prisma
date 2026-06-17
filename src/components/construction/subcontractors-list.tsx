@@ -22,7 +22,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import Fuse from 'fuse.js';
-import { SubcontractorForm } from '@/components/construction/subcontractor-form';
+import { SubcontractorForm } from './subcontractor-form';
 
 export function SubcontractorsList() {
   const { firestore } = useFirebase();

@@ -20,7 +20,7 @@ import { Badge } from '@/components/ui/badge';
 import type { PermissionRequest, Employee } from '@/lib/types';
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
-import { PermissionRequestForm } from '@/components/hr/permission-request-form';
+import { PermissionRequestForm } from './permission-request-form';
 import { toFirestoreDate } from '@/services/date-converter';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';

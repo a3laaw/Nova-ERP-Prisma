@@ -20,9 +20,9 @@ import {
 import { useLanguage } from '@/context/language-context';
 import type { AuthenticatedUser } from '@/context/auth-context';
 import { cn } from '@/lib/utils';
-import { Notifications } from '@/components/layout/notifications';
+import { Notifications } from './notifications';
 import Link from 'next/link';
-import { Breadcrumbs } from '@/components/layout/breadcrumbs';
+import { Breadcrumbs } from './breadcrumbs';
 import { useAppTheme } from '@/context/theme-context';
 import { Separator } from '@/components/ui/separator';
 import {

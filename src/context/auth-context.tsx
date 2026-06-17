@@ -1,5 +1,5 @@
 'use client'
-import { useSession } from 'next-auth/react'
+import { useSession, signIn, signOut } from 'next-auth/react'
 import { createContext, useContext, ReactNode } from 'react'
 
 export interface AuthenticatedUser {
@@ -9,14 +9,9 @@ export interface AuthenticatedUser {
 }
 
 interface AuthContextType {
-  user: AuthenticatedUser | null;
-  company: any | null;
-  loading: boolean;
-  error: string | null;
-  login: (email: string, password: string) => Promise<void>;
-  logout: () => Promise<void>;
-  resetPassword: (email: string) => Promise<void>;
-  refreshToken: () => Promise<void>;
+  user: AuthenticatedUser | null; company: any | null; loading: boolean;
+  error: string | null; login: (email: string, password: string) => Promise<void>;
+  logout: () => Promise<void>; resetPassword: (email: string) => Promise<void>; refreshToken: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -24,24 +19,20 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { data: session, status } = useSession()
   const user = session?.user ? {
-    id: (session.user as any).id || 'admin',
-    email: session.user.email || '',
-    username: (session.user as any).name || 'admin',
-    fullName: session.user.name,
-    name: session.user.name,
-    role: (session.user as any).role || 'admin',
-    companyId: (session.user as any).companyId,
-    currentCompanyId: (session.user as any).companyId,
+    id: (session.user as any).id || 'admin', email: session.user.email || '',
+    username: (session.user as any).name || 'admin', fullName: session.user.name,
+    name: session.user.name, role: (session.user as any).role || 'admin',
+    companyId: (session.user as any).companyId, currentCompanyId: (session.user as any).companyId,
     isActive: true,
   } as AuthenticatedUser : null
 
   return (
     <AuthContext.Provider value={{
       user, company: null, loading: status === 'loading', error: null,
-      login: async () => {}, logout: async () => {}, resetPassword: async () => {}, refreshToken: async () => {},
-    }}>
-      {children}
-    </AuthContext.Provider>
+      login: async (email, password) => { await signIn('credentials', { email, password, redirect: false }); window.location.reload() },
+      logout: async () => { await signOut({ redirect: false }); window.location.reload() },
+      resetPassword: async () => {}, refreshToken: async () => {},
+    }}>{children}</AuthContext.Provider>
   )
 }
 

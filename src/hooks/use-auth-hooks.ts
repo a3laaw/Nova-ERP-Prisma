@@ -1,23 +1,34 @@
 'use client';
-import { useSession } from 'next-auth/react';
+import { useAuth } from '@/context/auth-context';
 import { useMemo } from 'react';
 
+/**
+ * خطاف جلب بيانات المنشأة الحالية
+ */
 export const useCurrentCompany = () => {
-  const { data: session } = useSession();
-  const companyId = (session?.user as any)?.companyId || '';
-  return { id: companyId, slug: '' };
+  const { company } = useAuth();
+  return company;
 };
 
+/**
+ * خطاف فحص الصلاحيات السيادي
+ */
 export const usePermission = (required: string | string[]): boolean => {
-  const { data: session } = useSession();
-  const role = (session?.user as any)?.role;
+  const { user, loading } = useAuth();
   return useMemo(() => {
-    if (!role) return false;
+    if (loading || !user) return false;
     const roles = Array.isArray(required) ? required : [required];
-    return roles.includes(role) || role === 'admin';
-  }, [role, required]);
+    return roles.includes(user.role) || user.role === 'Developer';
+  }, [user, loading, required]);
 };
 
+/**
+ * خطاف إدارة أخطاء الجلسة
+ */
 export const useAuthError = () => {
-  return { error: null as string | null, clear: () => {} };
+  const { error, logout } = useAuth();
+  return { 
+      error, 
+      clear: logout 
+  };
 };

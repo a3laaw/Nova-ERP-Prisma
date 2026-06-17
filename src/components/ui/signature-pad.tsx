@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useRef, useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
+import { Button } from './button';
 import { Eraser, Check, MousePointer2 } from 'lucide-react';
 
 interface SignaturePadProps {

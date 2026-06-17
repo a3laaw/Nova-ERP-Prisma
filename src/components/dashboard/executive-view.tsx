@@ -2,14 +2,14 @@
 
 import { useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
-import { StatCard } from '@/components/dashboard/stat-card';
+import { StatCard } from './stat-card';
 import { 
     TrendingUp, Wallet, Activity, Users, Sparkles, 
     Building2, ArrowUpRight, Palette, ListChecks, CheckCircle2, Clock
 } from 'lucide-react';
 import { formatCurrency, cn, getTenantPath } from '@/lib/utils';
-import { RecentActivity } from '@/components/dashboard/recent-activity';
-import { TaskPrioritization } from '@/components/dashboard/task-prioritization';
+import { RecentActivity } from './recent-activity';
+import { TaskPrioritization } from './task-prioritization';
 import Link from 'next/link';
 import { useFirebase, useSubscription } from '@/firebase/index';
 import { toFirestoreDate } from '@/services/date-converter';

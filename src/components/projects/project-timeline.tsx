@@ -4,7 +4,7 @@ import type { Project } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CheckCircle, Milestone, MessageSquare, Construction, Plus } from 'lucide-react';
-import { DelayReportGenerator } from '@/components/projects/delay-report-generator';
+import { DelayReportGenerator } from './delay-report-generator';
 import { useLanguage } from '@/context/language-context';
 import { format } from 'date-fns';
 

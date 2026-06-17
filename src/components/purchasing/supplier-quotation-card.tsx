@@ -13,7 +13,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { PlusCircle, CheckCircle, FileText, Pencil, Calendar } from 'lucide-react';
 import type { Vendor, RequestForQuotation, SupplierQuotation } from '@/lib/types';
-import { SupplierQuotationForm } from '@/components/purchasing/supplier-quotation-form';
+import { SupplierQuotationForm } from './supplier-quotation-form';
 import { formatCurrency, cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { toFirestoreDate } from '@/services/date-converter';

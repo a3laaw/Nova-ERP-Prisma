@@ -22,7 +22,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import { searchVendors } from '@/lib/cache/fuse-search';
-import { VendorForm } from '@/components/purchasing/vendor-form';
+import { VendorForm } from './vendor-form';
 
 export function VendorsList() {
   const { firestore } = useFirebase();

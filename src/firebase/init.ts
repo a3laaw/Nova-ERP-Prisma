@@ -1,2 +1,1 @@
-export const auth = null
-export const firestore = null
+export const auth = null; export const firestore = null

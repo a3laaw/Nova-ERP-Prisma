@@ -24,7 +24,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import { searchItems } from '@/lib/cache/fuse-search';
-import { ItemForm } from '@/components/warehouse/item-form';
+import { ItemForm } from './item-form';
 import Link from 'next/link';
 
 interface ItemsListProps {

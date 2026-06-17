@@ -1,9 +1,9 @@
 'use client';
 
 import React from 'react';
-import { StatCard } from '@/components/dashboard/stat-card';
-import RecentActivity from '@/components/dashboard/recent-activity';
-import TaskPrioritization from '@/components/dashboard/task-prioritization';
+import { StatCard } from './stat-card';
+import RecentActivity from './recent-activity';
+import TaskPrioritization from './task-prioritization';
 import { CashFlowProjectionChart } from '../accounting/cash-flow-projection-chart';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';

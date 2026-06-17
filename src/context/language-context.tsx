@@ -1,41 +1,10 @@
-'use client';
-
-import React, { createContext, useContext, useState, ReactNode } from 'react';
-
-type Language = 'ar' | 'en';
-type Direction = 'rtl' | 'ltr';
-
-interface LanguageContextType {
-  language: Language;
-  direction: Direction;
-  toggleLanguage: () => void;
+'use client'
+import { createContext, useContext, useState, ReactNode } from 'react'
+const ctx = createContext<any>(undefined)
+export function LanguageProvider({ children }: { children: ReactNode }) {
+  const [lang, setLang] = useState<'ar'|'en'>('ar')
+  const [dir, setDir] = useState<'rtl'|'ltr'>('rtl')
+  const toggle = () => { const n = lang === 'ar' ? 'en' : 'ar'; setLang(n); setDir(n === 'ar' ? 'rtl' : 'ltr') }
+  return <ctx.Provider value={{ language: lang, direction: dir, toggleLanguage: toggle, isRTL: lang === 'ar', lang, t: (k: string) => k }}>{children}</ctx.Provider>
 }
-
-const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
-
-export const LanguageProvider = ({ children }: { children: ReactNode }) => {
-  const [language, setLanguage] = useState<Language>('ar');
-  const [direction, setDirection] = useState<Direction>('rtl');
-
-  const toggleLanguage = () => {
-    setLanguage((prev) => {
-      const newLang = prev === 'ar' ? 'en' : 'ar';
-      setDirection(newLang === 'ar' ? 'rtl' : 'ltr');
-      return newLang;
-    });
-  };
-
-  return (
-    <LanguageContext.Provider value={{ language, direction, toggleLanguage }}>
-      {children}
-    </LanguageContext.Provider>
-  );
-};
-
-export const useLanguage = () => {
-  const context = useContext(LanguageContext);
-  if (context === undefined) {
-    throw new Error('useLanguage must be used within a LanguageProvider');
-  }
-  return context;
-};
+export function useLanguage() { return useContext(ctx) }

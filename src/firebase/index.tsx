@@ -1,7 +1,10 @@
 'use client'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useSession } from 'next-auth/react'
 
-export function useFirebase() { return { firestore: true, auth: true } }
+export function useFirebase() {
+  return { firestore: true, auth: true }
+}
 
 const API_MAP: Record<string, string> = {
   'employees': '/api/employees', 'clients': '/api/clients?page=1&limit=200',
@@ -23,7 +26,7 @@ const API_MAP: Record<string, string> = {
   'clientTransactions': '/api/client-transactions', 'transactions': '/api/client-transactions',
 }
 
-export function useSubscription<T = any>(_firestore: any, collectionPath: string | null, _constraints: any[] = []) {
+export function useSubscription<T = any>(_firestore: any, collectionPath: string | null, _constraints: any[] = [], _isGroup: boolean = false) {
   const { data, isLoading, error } = useQuery<T[]>({
     queryKey: ['subscription', collectionPath],
     queryFn: async () => {
